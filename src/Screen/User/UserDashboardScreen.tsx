@@ -85,10 +85,10 @@ export default function UserDashboardScreen() {
         <View style={styles.tabBar}>
           <View style={styles.tabActive}><SymbolView name={{ ios: 'house.fill', android: 'home', web: 'home' }} size={18} tintColor="#7B3FF0" /><Text style={styles.tabActiveText}>Home</Text></View>
           <Pressable accessibilityRole="link" onPress={() => router.push('/agenda')} style={styles.tab}><SymbolView name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Agenda</Text></Pressable>
-          <View style={styles.tab}><SymbolView name={{ ios: 'chart.bar', android: 'bar_chart', web: 'bar_chart' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Charts</Text></View>
-          <View style={styles.tab}><SymbolView name={{ ios: 'person.2', android: 'group', web: 'group' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>People</Text></View>
-          <View style={styles.tab}><SymbolView name={{ ios: 'bookmark', android: 'bookmark', web: 'bookmark' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Saved</Text></View>
-          <View style={styles.tab}><SymbolView name={{ ios: 'person', android: 'person', web: 'person' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Profile</Text></View>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/charts')} style={styles.tab}><SymbolView name={{ ios: 'chart.bar', android: 'bar_chart', web: 'bar_chart' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Charts</Text></Pressable>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/people')} style={styles.tab}><SymbolView name={{ ios: 'person.2', android: 'group', web: 'group' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>People</Text></Pressable>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/saved')} style={styles.tab}><SymbolView name={{ ios: 'bookmark', android: 'bookmark', web: 'bookmark' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Saved</Text></Pressable>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/profile')} style={styles.tab}><SymbolView name={{ ios: 'person', android: 'person', web: 'person' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Profile</Text></Pressable>
         </View>
       </SafeAreaView>
     </View>

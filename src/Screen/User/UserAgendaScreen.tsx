@@ -4,14 +4,53 @@ import { StatusBar } from 'expo-status-bar';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type SessionProps = { track: string; title: string; speaker: string; role: string; initials: string; time: string; duration: string; room: string; color: string; bookmarked?: boolean };
+type SessionProps = {
+  track: string;
+  title: string;
+  speaker: string;
+  role: string;
+  initials: string;
+  time: string;
+  duration: string;
+  room: string;
+  color: string;
+  bookmarked?: boolean;
+};
 
-function SessionCard({ track, title, speaker, role, initials, time, duration, room, color, bookmarked }: SessionProps) {
+function SessionCard({
+  track,
+  title,
+  speaker,
+  role,
+  initials,
+  time,
+  duration,
+  room,
+  color,
+  bookmarked,
+}: SessionProps) {
   return (
     <View style={[styles.sessionCard, { borderTopColor: color }]}>
-      <View style={styles.sessionTop}><View style={[styles.trackPill, { backgroundColor: `${color}20` }]}><Text style={[styles.trackText, { color }]}>{track}</Text></View><SymbolView name={{ ios: bookmarked ? 'bookmark.fill' : 'bookmark', android: bookmarked ? 'bookmark' : 'bookmark_border', web: bookmarked ? 'bookmark' : 'bookmark_border' }} size={16} tintColor={bookmarked ? '#7C3AED' : '#B6C0D1'} /></View>
+      <View style={styles.sessionTop}>
+        <View style={[styles.trackPill, { backgroundColor: `${color}20` }]}>
+          <Text style={[styles.trackText, { color }]}>{track}</Text>
+        </View>
+        <SymbolView
+          name={{ ios: bookmarked ? 'bookmark.fill' : 'bookmark', android: bookmarked ? 'bookmark' : 'bookmark_border', web: bookmarked ? 'bookmark' : 'bookmark_border' }}
+          size={16}
+          tintColor={bookmarked ? '#7C3AED' : '#B6C0D1'}
+        />
+      </View>
       <Text style={styles.sessionTitle}>{title}</Text>
-      <View style={styles.speakerRow}><View style={[styles.initials, { backgroundColor: color }]}><Text style={styles.initialsText}>{initials}</Text></View><View><Text style={styles.speakerName}>{speaker}</Text><Text style={styles.speakerRole}>{role}</Text></View></View>
+      <View style={styles.speakerRow}>
+        <View style={[styles.initials, { backgroundColor: color }]}>
+          <Text style={styles.initialsText}>{initials}</Text>
+        </View>
+        <View>
+          <Text style={styles.speakerName}>{speaker}</Text>
+          <Text style={styles.speakerRole}>{role}</Text>
+        </View>
+      </View>
       <View style={styles.line} />
       <View style={styles.metaRow}><SymbolView name={{ ios: 'clock', android: 'schedule', web: 'schedule' }} size={12} tintColor="#728099" /><Text style={styles.metaMain}>{time}</Text><Text style={styles.metaText}>· {duration}</Text></View>
       <View style={styles.metaRow}><SymbolView name={{ ios: 'mappin.and.ellipse', android: 'location_on', web: 'location_on' }} size={12} tintColor="#7C3AED" /><Text style={styles.location}>{room}</Text><SymbolView name={{ ios: 'arrow.up.right.square', android: 'open_in_new', web: 'open_in_new' }} size={10} tintColor="#7C3AED" /></View>
@@ -39,9 +78,9 @@ export default function UserAgendaScreen() {
           <Pressable accessibilityRole="link" onPress={() => router.replace('/dashboard')} style={styles.tab}><SymbolView name={{ ios: 'house', android: 'home', web: 'home' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Home</Text></Pressable>
           <View style={styles.tabActive}><SymbolView name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} size={18} tintColor="#7B3FF0" /><Text style={styles.tabActiveText}>Agenda</Text></View>
           <View style={styles.tab}><SymbolView name={{ ios: 'chart.bar', android: 'bar_chart', web: 'bar_chart' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Charts</Text></View>
-          <View style={styles.tab}><SymbolView name={{ ios: 'person.2', android: 'group', web: 'group' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>People</Text></View>
-          <View style={styles.tab}><SymbolView name={{ ios: 'bookmark', android: 'bookmark', web: 'bookmark' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Saved</Text></View>
-          <View style={styles.tab}><SymbolView name={{ ios: 'person', android: 'person', web: 'person' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Profile</Text></View>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/people')} style={styles.tab}><SymbolView name={{ ios: 'person.2', android: 'group', web: 'group' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>People</Text></Pressable>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/saved')} style={styles.tab}><SymbolView name={{ ios: 'bookmark', android: 'bookmark', web: 'bookmark' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Saved</Text></Pressable>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/profile')} style={styles.tab}><SymbolView name={{ ios: 'person', android: 'person', web: 'person' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Profile</Text></Pressable>
         </View>
       </SafeAreaView>
     </View>
