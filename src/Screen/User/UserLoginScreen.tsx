@@ -14,13 +14,95 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../context/AuthContext';
+
+const LOGIN_ENDPOINT = process.env.EXPO_PUBLIC_LOGIN_URL;
+
+type LoginResponse = {
+  message?: string;
+  success?: boolean;
+  status?: boolean | string | number;
+  token?: string;
+  data?: {
+    name?: string;
+    email?: string;
+    role?: string;
+    token?: string;
+  };
+  user?: {
+    name?: string;
+    email?: string;
+    role?: string;
+    token?: string;
+  };
+};
 
 /** User sign-in screen. */
 export default function SignInScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSignIn = async () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !password) {
+      setError('Please enter your email address and password.');
+      return;
+    }
+
+    if (!LOGIN_ENDPOINT) {
+      setError('Login service is not configured. Please contact support.');
+      return;
+    }
+
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(LOGIN_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, password }),
+      });
+      const responseText = await response.text();
+      let data: LoginResponse = {};
+
+      try {
+        data = responseText ? (JSON.parse(responseText) as LoginResponse) : {};
+      } catch {
+        // A non-JSON response is handled below as an unsuccessful sign-in.
+      }
+
+      const rejectedByApi = data.success === false || data.status === false || data.status === 'error';
+      if (!response.ok || rejectedByApi) {
+        throw new Error(data.message || 'Unable to sign in. Please check your credentials.');
+      }
+
+      // Extract user data from response (handle different possible response structures)
+      const userData = data.data || data.user || {};
+      const userName = userData.name || trimmedEmail.split('@')[0]; // Fallback to email prefix if name not provided
+      const token = data.token || userData.token;
+
+      // Save user data to auth context
+      await login({
+        name: userName,
+        email: trimmedEmail,
+        role: userData.role,
+        token: token,
+      });
+
+      router.replace('/dashboard');
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Unable to sign in. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <View style={styles.screen}>
@@ -94,13 +176,17 @@ export default function SignInScreen() {
                 </View>
 
                 <Pressable
-                  onPress={() => router.push('/dashboard')}
-                  style={({ pressed }) => [styles.signInButton, pressed && styles.pressed]}>
-                  <Text style={styles.signInText}>Sign In</Text>
+                  accessibilityRole="button"
+                  disabled={isSubmitting}
+                  onPress={handleSignIn}
+                  style={({ pressed }) => [styles.signInButton, (pressed || isSubmitting) && styles.pressed]}>
+                  <Text style={styles.signInText}>{isSubmitting ? 'Signing In...' : 'Sign In'}</Text>
                 </Pressable>
 
+                {error ? <Text accessibilityRole="alert" style={styles.errorText}>{error}</Text> : null}
+
                 <Pressable
-                  onPress={() => {}}
+                  onPress={() => router.push('/forget-password')}
                   style={({ pressed }) => [styles.linkPressable, pressed && styles.pressed]}>
                   <Text style={styles.primaryLink}>Forgot Password?</Text>
                 </Pressable>
@@ -251,6 +337,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
+  },
+  errorText: {
+    marginTop: -8,
+    marginBottom: 12,
+    color: '#D92D3A',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
   },
   linkPressable: {
     alignItems: 'center',

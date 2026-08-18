@@ -1,7 +1,8 @@
 import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AdminBottomNav from './AdminBottomNav';
 
@@ -22,7 +23,12 @@ function ConferenceCard({
   attendeeCount,
   sessionCount,
 }: ConferenceCardProps) {
+  const [deleted, setDeleted] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editableTitle, setEditableTitle] = useState(title);
   const accentColor = active ? '#00A878' : '#718098';
+
+  if (deleted) return null;
 
   return (
     <View style={[styles.card, { borderTopColor: accentColor }]}>
@@ -33,6 +39,8 @@ function ConferenceCard({
         <View style={styles.cardActions}>
           <Pressable
             accessibilityLabel={`Edit ${title}`}
+            accessibilityRole="button"
+            onPress={() => setEditing((current) => !current)}
             style={styles.iconAction}
           >
             <SymbolView
@@ -43,6 +51,8 @@ function ConferenceCard({
           </Pressable>
           <Pressable
             accessibilityLabel={`Delete ${title}`}
+            accessibilityRole="button"
+            onPress={() => setDeleted(true)}
             style={styles.deleteAction}
           >
             <SymbolView
@@ -54,7 +64,7 @@ function ConferenceCard({
         </View>
       </View>
 
-      <Text style={styles.cardTitle}>{title}</Text>
+      {editing ? <TextInput accessibilityLabel={`Conference title for ${title}`} value={editableTitle} onChangeText={setEditableTitle} autoFocus style={styles.editTitleInput} /> : <Text style={styles.cardTitle}>{editableTitle}</Text>}
       <View style={styles.detailRow}>
         <SymbolView
           name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }}
@@ -91,6 +101,7 @@ function ConferenceCard({
 
 export default function AdminEventsScreen() {
   const router = useRouter();
+  const [newConferenceVisible, setNewConferenceVisible] = useState(false);
 
   return (
     <View style={styles.screen}>
@@ -110,12 +121,13 @@ export default function AdminEventsScreen() {
               <Pressable style={styles.agendaButton}>
                 <Text style={styles.agendaText}>▦ Agenda</Text>
               </Pressable>
-              <Pressable style={styles.newButton}>
+              <Pressable accessibilityLabel="Create new conference" accessibilityRole="button" onPress={() => setNewConferenceVisible(true)} style={styles.newButton}>
                 <Text style={styles.newText}>＋ New</Text>
               </Pressable>
             </View>
           </View>
 
+          {newConferenceVisible ? <ConferenceCard active={false} attendeeCount={0} date="Choose event dates" location="Choose a venue" sessionCount={0} title="New Conference" /> : null}
           <ConferenceCard
             active
             attendeeCount={247}
@@ -223,6 +235,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF0F1',
   },
   cardTitle: { color: '#202B40', fontSize: 11, fontWeight: '800', marginTop: 8 },
+  editTitleInput: { height: 31, marginTop: 7, paddingHorizontal: 8, borderWidth: 1, borderRadius: 6, borderColor: '#7C3AED', color: '#202B40', fontSize: 11, fontWeight: '800' },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 7 },
   detailText: { color: '#65758C', fontSize: 9 },
   divider: {

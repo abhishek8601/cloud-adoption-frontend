@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
 import type { ComponentProps } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../context/AuthContext';
 
 type ExploreCardProps = {
   title: string;
@@ -42,6 +43,29 @@ function Stat({ value, label, symbol }: { value: string; label: string; symbol: 
 
 export default function UserDashboardScreen() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
+
+  const userName = user?.name || 'User';
+  const userInitials = userName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Show loading state while user data is being restored
+  if (isLoading) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar style="dark" />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={[styles.content, { alignItems: 'center', justifyContent: 'center' }]}>
+            <Text style={styles.sectionTitle}>Loading...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
@@ -60,13 +84,17 @@ export default function UserDashboardScreen() {
             <View style={styles.eventDetails}>
               <View style={styles.detailLine}><SymbolView name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} size={13} tintColor="#FFFFFF" /><Text style={styles.eventDetailText}>September 15–17, 2026</Text></View>
               <View style={styles.detailLine}><SymbolView name={{ ios: 'mappin.and.ellipse', android: 'location_on', web: 'location_on' }} size={13} tintColor="#FFFFFF" /><Text style={styles.eventDetailText}>Hingewy, San Francisco, CA</Text></View>
-              <View style={styles.detailLine}><SymbolView name={{ ios: 'globe', android: 'language', web: 'language' }} size={13} tintColor="#FFFFFF" /><Text style={styles.eventDetailText}>5 Embarcadero Center</Text></View>
+              <View 
+              style={styles.detailLine}>
+                <SymbolView name={{ ios: 'globe', android: 'language', web: 'language' }} size={13} tintColor="#FFFFFF" /><Text 
+              style={styles.eventDetailText}>5 Embarcadero Center</Text>
+              </View>
             </View>
           </View>
 
           <View style={styles.welcomeCard}>
-            <View style={styles.avatar}><Text style={styles.avatarText}>SC</Text></View>
-            <View style={styles.welcomeCopy}><Text style={styles.welcomeTitle}>Welcome back, Sarah</Text><Text style={styles.welcomeRole}>Microsoft · Cloud Architect</Text></View>
+            <View style={styles.avatar}><Text style={styles.avatarText}>{userInitials}</Text></View>
+            <View style={styles.welcomeCopy}><Text style={styles.welcomeTitle}>Welcome back, {userName}</Text><Text style={styles.welcomeRole}>Microsoft · Cloud Architect</Text></View>
             <View style={styles.verified}><SymbolView name={{ ios: 'checkmark', android: 'check', web: 'check' }} size={10} tintColor="#FFFFFF" /><Text style={styles.verifiedText}>Verified</Text></View>
           </View>
 

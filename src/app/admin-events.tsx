@@ -1,1 +1,2 @@
-import AdminEventsScreen from '../Screen/Admin/AdminEventsScreen'; export default AdminEventsScreen;
+import AdminEventsScreen from '../Screen/Admin/AdminEventsScreen';
+export default AdminEventsScreen;

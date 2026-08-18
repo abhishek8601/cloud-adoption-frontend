@@ -1,1 +1,2 @@
-import AdminProfileScreen from '../Screen/Admin/AdminProfileScreen'; export default AdminProfileScreen;
+import AdminProfileScreen from '../Screen/Admin/AdminProfileScreen';
+export default AdminProfileScreen;

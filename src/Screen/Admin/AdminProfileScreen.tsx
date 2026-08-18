@@ -1,9 +1,11 @@
-import { SymbolView } from 'expo-symbols';
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../context/AuthContext';
 import AdminBottomNav from './AdminBottomNav';
+
+const LOGOUT_ENDPOINT = process.env.EXPO_PUBLIC_USER_LOGOUT_URL;
 
 function Row({
   label,
@@ -24,6 +26,36 @@ function Row({
 
 export default function AdminProfileScreen() {
   const router = useRouter();
+  const { logout, user } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      if (LOGOUT_ENDPOINT && user?.email) {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        };
+
+        // Add authorization header if token is available
+        if (user?.token) {
+          headers.Authorization = `Bearer ${user.token}`;
+        }
+
+        await fetch(LOGOUT_ENDPOINT, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ email: user.email }),
+        });
+      }
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+    } finally {
+      // Clear user data regardless of API success
+      await logout();
+      router.dismissAll();
+      router.replace('/');
+    }
+  };
   return (
     <View style={styles.screen}>
       <StatusBar style="dark" />
@@ -34,7 +66,7 @@ export default function AdminProfileScreen() {
         <View style={styles.content}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Profile</Text>
-            <Pressable style={styles.edit}>
+            <Pressable accessibilityLabel="Edit profile" accessibilityRole="button" onPress={() => router.push('/admin-profile-edit')} style={styles.edit}>
               <Text style={styles.editText}>♧ Edit</Text>
             </Pressable>
           </View>
@@ -70,7 +102,7 @@ export default function AdminProfileScreen() {
           <View style={styles.card}>
             <Row label="Platform" value="iOS" />
           </View>
-          <Pressable style={styles.signOut}>
+          <Pressable accessibilityLabel="Sign out" accessibilityRole="button" onPress={handleSignOut} style={styles.signOut}>
             <Text style={styles.signOutText}>Sign Out</Text>
           </Pressable>
         </View>

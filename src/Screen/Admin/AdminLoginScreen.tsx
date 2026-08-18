@@ -21,6 +21,14 @@ export default function AdminLoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const signIn = () => {
+    if (email.trim().toLowerCase() === 'superadmin@gmail.com' && password === 'super@123') {
+      router.replace('/superadmin-dashboard');
+      return;
+    }
+    router.replace('/admin-dashboard');
+  };
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
@@ -99,7 +107,8 @@ export default function AdminLoginScreen() {
                 </View>
 
                 <Pressable
-                  onPress={() => router.push('/admin-dashboard')}
+                  accessibilityLabel="Sign in"
+                  onPress={signIn}
                   style={styles.submitButton}
                 >
                   <Text style={styles.submitText}>Sign In</Text>
