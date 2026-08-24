@@ -18,23 +18,40 @@ import { useAuth } from '../../context/AuthContext';
 
 const LOGIN_ENDPOINT = process.env.EXPO_PUBLIC_LOGIN_URL;
 
+type LoginUser = {
+  id?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  company_name?: string;
+  designation?: string;
+  city?: string;
+  state?: string;
+  area_of_interest?: string;
+  linkedin_url?: string;
+  remarks?: string;
+  status?: string;
+  email_verified_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  role?: {
+    id?: number;
+    name?: string;
+  };
+};
+
 type LoginResponse = {
   message?: string;
   success?: boolean;
   status?: boolean | string | number;
   token?: string;
+
   data?: {
-    name?: string;
-    email?: string;
-    role?: string;
     token?: string;
+    user?: LoginUser;
   };
-  user?: {
-    name?: string;
-    email?: string;
-    role?: string;
-    token?: string;
-  };
+
+  user?: LoginUser;
 };
 
 /** User sign-in screen. */
@@ -83,18 +100,29 @@ export default function SignInScreen() {
         throw new Error(data.message || 'Unable to sign in. Please check your credentials.');
       }
 
-      // Extract user data from response (handle different possible response structures)
-      const userData = data.data || data.user || {};
-      const userName = userData.name || trimmedEmail.split('@')[0]; // Fallback to email prefix if name not provided
-      const token = data.token || userData.token;
+    // Extract user data from response
+const userData = data.data?.user || data.user || {};
 
-      // Save user data to auth context
-      await login({
-        name: userName,
-        email: trimmedEmail,
-        role: userData.role,
-        token: token,
-      });
+const userName = userData.name || trimmedEmail.split('@')[0];
+
+const token = data.data?.token || data.token;
+
+// Save complete user data to AuthContext
+await login({
+  id: userData.id,
+  name: userName,
+  email: userData.email || trimmedEmail,
+  phone: userData.phone,
+  company_name: userData.company_name,
+  designation: userData.designation,
+  city: userData.city,
+  state: userData.state,
+  area_of_interest: userData.area_of_interest,
+  linkedin_url: userData.linkedin_url,
+  remarks: userData.remarks,
+  role: userData.role?.name,
+  token: token,
+});
 
       router.replace('/dashboard');
     } catch (requestError) {
@@ -108,7 +136,8 @@ export default function SignInScreen() {
     <View style={styles.screen}>
       <StatusBar style="light" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         style={styles.keyboardAvoidingView}>
         <SafeAreaView style={styles.safeArea}>
           <ScrollView
@@ -180,10 +209,13 @@ export default function SignInScreen() {
                   disabled={isSubmitting}
                   onPress={handleSignIn}
                   style={({ pressed }) => [styles.signInButton, (pressed || isSubmitting) && styles.pressed]}>
-                  <Text style={styles.signInText}>{isSubmitting ? 'Signing In...' : 'Sign In'}</Text>
+                  <Text 
+                  style={styles.signInText}>{isSubmitting ? 'Signing In...' : 'Sign In'}
+                  </Text>
                 </Pressable>
 
-                {error ? <Text accessibilityRole="alert" style={styles.errorText}>{error}</Text> : null}
+                {error ? <Text accessibilityRole="alert" 
+                style={styles.errorText}>{error}</Text> : null}
 
                 <Pressable
                   onPress={() => router.push('/forget-password')}
@@ -193,7 +225,8 @@ export default function SignInScreen() {
 
                 <View style={styles.secondaryText}>
                   <Text style={styles.secondaryCopy}>New attendee? </Text>
-                  <Pressable accessibilityRole="link" onPress={() => router.push('/register')}>
+                  <Pressable accessibilityRole="link" 
+                  onPress={() => router.push('/register')}>
                     <Text style={styles.secondaryLink}>Register Now</Text>
                   </Pressable>
                 </View>

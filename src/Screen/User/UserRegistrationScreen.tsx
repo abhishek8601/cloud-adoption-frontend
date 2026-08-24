@@ -125,8 +125,8 @@ export default function UserRegistrationScreen() {
           designation: form.designation,
           city: form.city,
           state: form.state,
-          interest: form.interest,
-          linkedin: form.linkedIn,
+          area_of_interest: form.interest,
+          linkedin_url: form.linkedIn,
           remarks: form.remarks,
         }),
       });
@@ -158,9 +158,11 @@ export default function UserRegistrationScreen() {
     <View style={styles.screen}>
       <StatusBar style="dark" />
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
-        style={styles.flex}>
+          <KeyboardAvoidingView
+           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+           style={styles.flex}
+        >
           <View style={styles.header}>
             <Pressable accessibilityLabel="Go back" hitSlop={12} 
             onPress={() => router.push('/')} style={styles.backButton}>
@@ -172,9 +174,12 @@ export default function UserRegistrationScreen() {
             <View style={styles.headerSpacer} />
           </View>
 
-          <ScrollView 
-          contentContainerStyle={styles.content} 
-          keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+            >
             <Text style={styles.helper}>All required fields must be completed.</Text>
 
             <Text style={styles.sectionTitle}>Personal Information</Text>
@@ -314,7 +319,8 @@ const styles = StyleSheet.create({
   content: { 
     paddingHorizontal: 16, 
     paddingTop: 16, 
-    paddingBottom: 28 },
+    paddingBottom: 200,
+},
   helper: { 
     color: '#69758A', 
     fontSize: 12, 

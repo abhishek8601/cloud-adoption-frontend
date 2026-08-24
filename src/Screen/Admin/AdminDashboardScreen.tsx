@@ -1,6 +1,6 @@
-import { SymbolView } from 'expo-symbols';
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AdminBottomNav from './AdminBottomNav';
@@ -36,21 +36,104 @@ export default function AdminDashboardScreen() {
     <View style={styles.screen}>
       <StatusBar style="dark" />
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}><Text style={styles.headerTitle}>Dashboard</Text></View>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Dashboard</Text>
-          <Text style={styles.subtitle}>Cloud Adoption Solutions</Text>
+        <View style={styles.header}>
+          <Text 
+          style={styles.headerTitle}>
+            Dashboard
+            </Text></View>
+        <ScrollView 
+        contentContainerStyle={styles.content} 
+        showsVerticalScrollIndicator={false}>
 
-          <MetricCard icon={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} value="1" title="Active Conferences" detail="Currently running" backgroundColor="#F2ECFF" tintColor="#7C3AED" />
-          <MetricCard icon={{ ios: 'clock', android: 'schedule', web: 'schedule' }} value="3" title="Pending Approvals" detail="Require your attention" backgroundColor="#FFF3E5" tintColor="#E98200" />
-          <MetricCard icon={{ ios: 'person.2', android: 'group', web: 'group' }} value="17" title="Total Users" detail="All registered" backgroundColor="#E5F8F3" tintColor="#00A878" />
+          <Text 
+          style={styles.title}>
+            Dashboard
+            </Text>
+          <Text 
+          style={styles.subtitle}>
+            Cloud Adoption Solutions
+            </Text>
 
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.actionsGrid}>
-            {['Create Conference', 'Watchlist', 'Notifications', 'Import Data'].map((action) => (
-              <Pressable key={action} style={styles.actionCard}><Text style={styles.actionText}>{action}</Text></Pressable>
-            ))}
-          </View>
+          <MetricCard icon={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} 
+          value="1" title="Active Conferences" 
+          detail="Currently running" backgroundColor="#F2ECFF" 
+          tintColor="#7C3AED" />
+
+          <MetricCard icon={{ ios: 'clock', android: 'schedule', web: 'schedule' }} 
+          value="3" title="Pending Approvals" detail="Require your attention" 
+          backgroundColor="#FFF3E5" tintColor="#E98200" />
+
+          <MetricCard icon={{ ios: 'person.2', android: 'group', web: 'group' }} 
+          value="17" title="Total Users" detail="All registered" 
+          backgroundColor="#E5F8F3" tintColor="#00A878" />
+
+         <Text style={styles.sectionTitle}>Quick Actions</Text>
+
+<View style={styles.actionsGrid}>
+  <Pressable style={[styles.actionCard, styles.createCard]}>
+    <View style={[styles.actionIcon, styles.createIcon]}>
+      <SymbolView
+        name={{
+          ios: 'plus',
+          android: 'add',
+          web: 'add',
+        }}
+        size={30}
+        tintColor="#7C3AED"
+      />
+    </View>
+
+    <Text style={styles.actionText}>Create Conference</Text>
+  </Pressable>
+
+  <Pressable style={[styles.actionCard, styles.watchlistCard]}>
+    <View style={[styles.actionIcon, styles.watchlistIcon]}>
+      <SymbolView
+        name={{
+          ios: 'clock',
+          android: 'schedule',
+          web: 'schedule',
+        }}
+        size={30}
+        tintColor="#E98200"
+      />
+    </View>
+
+    <Text style={styles.actionText}>Watchlist</Text>
+  </Pressable>
+
+  <Pressable style={[styles.actionCard, styles.notificationCard]}>
+    <View style={[styles.actionIcon, styles.notificationIcon]}>
+      <SymbolView
+        name={{
+          ios: 'bell',
+          android: 'notifications_none',
+          web: 'notifications_none',
+        }}
+        size={30}
+        tintColor="#009BC2"
+      />
+    </View>
+
+    <Text style={styles.actionText}>Notifications</Text>
+  </Pressable>
+
+  <Pressable style={[styles.actionCard, styles.exportCard]}>
+    <View style={[styles.actionIcon, styles.exportIcon]}>
+      <SymbolView
+        name={{
+          ios: 'arrow.down.to.line',
+          android: 'file_download',
+          web: 'download',
+        }}
+        size={30}
+        tintColor="#00A878"
+      />
+    </View>
+
+    <Text style={styles.actionText}>Export Data</Text>
+  </Pressable>
+</View>
 
           <Text style={styles.sectionTitle}>Recent Registrations</Text>
           {['Nina Shah', 'Chris Taylor'].map((name) => (
@@ -65,5 +148,215 @@ export default function AdminDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F7F8FC' }, safeArea: { flex: 1 }, header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' }, headerTitle: { color: '#1D2639', fontSize: 13, fontWeight: '800' }, content: { padding: 13, paddingBottom: 78 }, title: { color: '#1D2639', fontSize: 24, fontWeight: '800' }, subtitle: { color: '#718098', fontSize: 10, marginBottom: 10 }, metricCard: { height: 68, marginBottom: 9, borderRadius: 12, padding: 11, flexDirection: 'row', alignItems: 'center' }, metricIcon: { width: 37, height: 37, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' }, metricCopy: { flex: 1, marginLeft: 10 }, metricValue: { color: '#1E273B', fontSize: 21, fontWeight: '800' }, metricTitle: { color: '#263147', fontSize: 11, fontWeight: '800' }, metricDetail: { color: '#708098', fontSize: 9 }, chevron: { fontSize: 27 }, sectionTitle: { color: '#62718A', fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.7, marginTop: 13, marginBottom: 8 }, actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, actionCard: { width: '48%', height: 62, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' }, actionText: { color: '#253046', fontSize: 10, fontWeight: '700' }, userRow: { height: 51, marginBottom: 2, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF' }, avatar: { width: 27, height: 27, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: '#00A878' }, avatarText: { color: '#FFFFFF', fontSize: 8, fontWeight: '800' }, userInfo: { flex: 1, marginLeft: 8 }, userName: { color: '#253046', fontSize: 11, fontWeight: '800' }, userDetail: { color: '#738198', fontSize: 8 }, pending: { overflow: 'hidden', borderRadius: 8, padding: 5, color: '#FFFFFF', fontSize: 8, fontWeight: '800', backgroundColor: '#E98200' }, tabBar: { height: 62, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', backgroundColor: '#000000' }, activeTab: { minWidth: 43, borderRadius: 17, paddingHorizontal: 10, paddingVertical: 5, alignItems: 'center', backgroundColor: '#7C3AED' }, activeTabText: { color: '#FFFFFF', fontSize: 8 }, tabText: { color: '#FFFFFF', fontSize: 9 },
+  screen: 
+  { flex: 1, 
+    backgroundColor: '#F7F8FC' }, 
+    
+  safeArea: { 
+    flex: 1 
+
+  }, 
+  header: { 
+    height: 52, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: '#FFFFFF' },
+
+  headerTitle: { 
+    color: '#1D2639', 
+    fontSize: 13, 
+    fontWeight: '800' }, 
+
+  content: { 
+    padding: 13, 
+    paddingBottom: 78 },
+
+  title: { 
+    color: '#1D2639', 
+    fontSize: 24, 
+    fontWeight: '800' },
+
+  subtitle: { 
+    color: '#718098', 
+    fontSize: 10, 
+    marginBottom: 10 }, 
+  metricCard: { 
+    height: 68, 
+    marginBottom: 9, 
+    borderRadius: 12, 
+    padding: 11, 
+    flexDirection: 'row', 
+    alignItems: 'center' }, 
+
+  metricIcon: { 
+    width: 37, 
+    height: 37, 
+    borderRadius: 10, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: '#FFFFFF' }, 
+  metricCopy: { 
+    flex: 1, 
+    marginLeft: 10 },
+
+  metricValue: { 
+    color: '#1E273B', 
+    fontSize: 21, 
+    fontWeight: '800' }, 
+
+  metricTitle: { 
+    color: '#263147', 
+    fontSize: 11, 
+    fontWeight: '800' },
+
+  metricDetail: { 
+    color: '#708098', 
+    fontSize: 9 }, 
+
+  chevron: { 
+    fontSize: 27
+     },
+
+  sectionTitle: { 
+    color: '#62718A', 
+    fontSize: 10, 
+    fontWeight: '800', 
+    textTransform: 'uppercase', 
+    letterSpacing: 0.7, 
+    marginTop: 13, 
+    marginBottom: 8 },
+
+  actionsGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  rowGap: 16,
+},
+
+actionCard: {
+  width: '48.5%',
+  height: 152,
+  borderRadius: 20,
+  alignItems: 'center',
+  justifyContent: 'center',
+
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+  shadowOpacity: 0.07,
+  shadowRadius: 8,
+  elevation: 3,
+},
+
+actionIcon: {
+  width: 66,
+  height: 66,
+  borderRadius: 18,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 16,
+},
+
+actionText: {
+  color: '#161C2E',
+  fontSize: 10,
+  fontWeight: '800',
+  textAlign: 'center',
+},
+
+createCard: {
+  backgroundColor: '#F8F6FF',
+},
+
+createIcon: {
+  backgroundColor: '#EDE5FF',
+},
+
+watchlistCard: {
+  backgroundColor: '#FAF7F2',
+},
+
+watchlistIcon: {
+  backgroundColor: '#F8ECDF',
+},
+
+notificationCard: {
+  backgroundColor: '#F0FAFC',
+},
+
+notificationIcon: {
+  backgroundColor: '#DDF2F7',
+},
+
+exportCard: {
+  backgroundColor: '#F0FAF7',
+},
+
+exportIcon: {
+  backgroundColor: '#DDF2ED',
+},
+  
+  
+  userRow: { 
+    height: 51, 
+    marginBottom: 2, 
+    paddingHorizontal: 10, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#FFFFFF' }, 
+
+  avatar: { 
+    width: 27, 
+    height: 27, 
+    borderRadius: 7, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: '#00A878' }, 
+
+  avatarText: { 
+    color: '#FFFFFF', 
+    fontSize: 8, 
+    fontWeight: '800' },
+
+  userInfo: { 
+    flex: 1, 
+    marginLeft: 8 }, 
+
+  userName: { 
+    color: '#253046', 
+    fontSize: 11, 
+    fontWeight: '800' },
+
+  userDetail: { 
+    color: '#738198', 
+    fontSize: 8 }, 
+
+  pending: { 
+    overflow: 'hidden', 
+    borderRadius: 8, 
+    padding: 5, 
+    color: '#FFFFFF', 
+    fontSize: 8, 
+    fontWeight: '800', 
+    backgroundColor: '#E98200' }, 
+
+  tabBar: { 
+    height: 62, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-around', 
+    backgroundColor: '#000000' },
+
+  activeTab: { 
+    minWidth: 43, 
+    borderRadius: 17, 
+    paddingHorizontal: 10, 
+    paddingVertical: 5, 
+    alignItems: 'center', 
+    backgroundColor: '#7C3AED' },
+
+  activeTabText: { color: '#FFFFFF', fontSize: 8 }, 
+  tabText: { color: '#FFFFFF', fontSize: 9 },
 });

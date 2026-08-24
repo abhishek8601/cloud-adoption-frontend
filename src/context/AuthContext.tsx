@@ -1,11 +1,19 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-export type User = {
-  name: string;
-  email: string;
+type User = {
+  id?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  company_name?: string;
+  designation?: string;
+  city?: string;
+  state?: string;
+  area_of_interest?: string;
+  linkedin_url?: string;
+  remarks?: string;
   role?: string;
-  avatar?: string;
   token?: string;
 };
 
