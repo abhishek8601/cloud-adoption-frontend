@@ -47,16 +47,16 @@ export default function UserProfileEditScreen() {
   const [success, setSuccess] = useState(false);
 
   const [form, setForm] = useState({
-    name: user?.name || 'User',
-    phone: '+1 (415) 555-0142',
-    company: 'Microsoft',
-    designation: user?.role || 'Attendee',
-    city: 'San Francisco',
-    state: 'CA',
-    interest: '',
-    linkedin: 'linkedin.com/in/' + (user?.name || 'user').toLowerCase().replace(/\s/g, ''),
-    remarks: '',
-  });
+  name: user?.name || '',
+  phone: user?.phone || '',
+  company: user?.company_name || '',
+  designation: user?.designation || '',
+  city: user?.city || '',
+  state: user?.state || '',
+  interest: user?.area_of_interest || '',
+  linkedin: user?.linkedin_url || '',
+  remarks: user?.remarks || '',
+}); 
 
   const userInitials = (user?.name || 'User')
     .split(' ')
@@ -89,8 +89,49 @@ export default function UserProfileEditScreen() {
         headers.Authorization = `Bearer ${user.token}`;
       }
 
-      const requestData = {
+     const requestData = {
+      name: form.name,
+      email: user?.email,
+      phone: form.phone,
+      company_name: form.company,
+      designation: form.designation,
+      city: form.city,
+      state: form.state,
+      area_of_interest: form.interest,
+      linkedin_url: form.linkedin,
+      remarks: form.remarks,
+};
+
+  const response = await fetch(PROFILE_UPDATE_ENDPOINT, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(requestData),
+      });
+const responseText = await response.text();
+let data: any = {};
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        console.log('Response is not JSON');
+      }
+      if (!response.ok) {
+  throw new Error(
+    data?.message ||
+    data?.error ||
+    `Server Error: ${response.status}`
+  );
+}
+
+      const isSuccessful = data.success === true || data.status === 'success' || response.ok;
+      if (!isSuccessful) {
+        throw new Error(data.message || 'Failed to save profile. Please try again.');
+      }
+
+     // Update local user with ALL fields
+await updateUser({
   name: form.name,
+  email: user?.email,
   phone: form.phone,
   company_name: form.company,
   designation: form.designation,
@@ -99,47 +140,9 @@ export default function UserProfileEditScreen() {
   area_of_interest: form.interest,
   linkedin_url: form.linkedin,
   remarks: form.remarks,
-};
-
-console.log('========== PROFILE UPDATE ==========');
-console.log('API URL:', PROFILE_UPDATE_ENDPOINT);
-console.log('REQUEST JSON:', JSON.stringify(requestData, null, 2));
-console.log('====================================');
-
-
-
-      const response = await fetch(PROFILE_UPDATE_ENDPOINT, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({
-          name: form.name,
-          phone: form.phone,
-          company_name: form.company,
-          designation: form.designation,
-          city: form.city,
-          state: form.state,
-          area_of_interest: form.interest,
-          linkedin_url: form.linkedin,
-          remarks: form.remarks,
-        }),
-      });
-
-      const responseText = await response.text();
-      let data: any = {};
-
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch {
-        // Handle non-JSON response
-      }
-
-      const isSuccessful = data.success === true || data.status === 'success' || response.ok;
-      if (!isSuccessful) {
-        throw new Error(data.message || 'Failed to save profile. Please try again.');
-      }
-
-      // Update local auth context
-      await updateUser({ name: form.name, role: form.designation });
+  role: user?.role,
+  token: user?.token,
+});
       setSuccess(true);
 
       // Navigate back after 1 second to show success message
@@ -216,11 +219,7 @@ console.log('====================================');
 
           <Text style={styles.sectionTitle}>INTERESTS</Text>
           <View style={styles.formCard}>
-            <Text style={styles.fieldLabel}>AREA OF INTEREST</Text>
-            <Pressable accessibilityLabel="Select area of interest" accessibilityRole="button" style={styles.selectInput}>
-              <Text style={[styles.selectText, !form.interest && styles.placeholder]}>{form.interest || 'Select an area of interest'}</Text>
-              <SymbolView name={{ ios: 'chevron.down', android: 'keyboard_arrow_down', web: 'keyboard_arrow_down' }} size={13} tintColor="#5E6D84" />
-            </Pressable>
+            <EditableField label="AREA OF INTEREST" value={form.interest} onChangeText={updateField('interest')} />
             <EditableField label="LINKEDIN URL" value={form.linkedin} onChangeText={updateField('linkedin')} keyboardType="url" icon={{ ios: 'link', android: 'link', web: 'link' }} />
             <EditableField label="REMARKS" value={form.remarks} onChangeText={updateField('remarks')} multiline placeholder="Notes for organisers" />
           </View>

@@ -22,6 +22,8 @@ export default function UserProfileScreen() {
   const userName = user?.name || 'User';
   const userEmail = user?.email || 'user@example.com';
   const userRole = user?.role || 'Attendee';
+  const userDesignation = user?.designation || '-';
+  const userCompany = user?.company_name || '-';
 
   const userInitials = userName
     .split(' ')
@@ -31,12 +33,12 @@ export default function UserProfileScreen() {
     .slice(0, 2);
 
   const personalDetails = [
-    ['Name', userName],
-    ['Email', userEmail],
-    ['Company', 'Microsoft'],
-    ['Designation', userRole],
-    ['LinkedIn', 'linkedin.com/in/' + userName.toLowerCase().replace(/\s/g, '')],
-  ];
+  ['Name', userName],
+  ['Email', userEmail],
+  ['Company', user?.company_name || '-'],
+  ['Designation', user?.designation || '-'],
+  ['LinkedIn', user?.linkedin_url || '-'],
+];
 
   const handleSignOut = async () => {
     try {
@@ -80,13 +82,45 @@ export default function UserProfileScreen() {
     );
   }
 
-  return <View style={styles.screen}><StatusBar style="dark" /><SafeAreaView style={styles.safeArea}>
-    <View style={styles.header}><Text style={styles.headerTitle}>Profile</Text><Pressable accessibilityLabel="Edit profile" accessibilityRole="button" onPress={() => router.push('/profile-edit')} style={styles.editButton}><SymbolView name={{ ios: 'square.and.pencil', android: 'edit', web: 'edit' }} size={14} tintColor="#7C3AED" /><Text style={styles.editText}>Edit</Text></Pressable></View>
-    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.profileCard}><View style={styles.avatar}><Text style={styles.avatarText}>{userInitials}</Text></View><View style={styles.profileCopy}><Text style={styles.name}>{userName}</Text><Text style={styles.role}>{userRole}</Text><Text style={styles.company}>Microsoft</Text><View style={styles.verified}><SymbolView name={{ ios: 'checkmark', android: 'check', web: 'check' }} size={10} tintColor="#FFF" /><Text style={styles.verifiedText}>Verified Attendee</Text></View></View></View>
-      <Text style={styles.section}>Account Information</Text><View style={styles.accountCard}><InfoRow label="Conference" value="Cloud Adoption Summit 2025" locked /><InfoRow label="Eventbrite Ticket ID" value="EB-012345-801" ticket /><InfoRow label="Email Address" value={userEmail} locked /></View><Text style={styles.note}>These fields are set at registration and cannot be changed.</Text>
-      <Text style={styles.section}>Personal Details</Text><View style={styles.personalCard}>{personalDetails.map(([label, value], index) => <View key={label} style={[styles.personalRow, index < personalDetails.length - 1 && styles.divider]}><Text style={styles.personalLabel}>{label}</Text><Text style={label === 'LinkedIn' ? styles.link : styles.personalValue}>{value}</Text></View>)}</View>
-      <Text style={styles.section}>Notifications</Text><View style={styles.notificationCard}><View style={styles.bell}><SymbolView name={{ ios: 'bell', android: 'notifications', web: 'notifications' }} size={17} tintColor="#7C3AED" /></View><View style={styles.notifyCopy}><Text style={styles.notifyTitle}>Push Notifications</Text><Text style={styles.notifyDetail}>Session reminders & announcements</Text></View><Pressable accessibilityLabel="Push notifications" accessibilityRole="switch" accessibilityState={{ checked: pushNotificationsEnabled }} hitSlop={8} onPress={() => setPushNotificationsEnabled((enabled) => !enabled)} style={[styles.toggle, !pushNotificationsEnabled && styles.toggleOff]}><View style={styles.knob} /></Pressable></View>
+  return <View style={styles.screen}><StatusBar style="dark" />
+  <SafeAreaView style={styles.safeArea}>
+    <View 
+    style={styles.header}>
+      <Text style={styles.headerTitle}>
+        Profile</Text>
+
+    <Pressable accessibilityLabel="Edit profile" 
+    accessibilityRole="button" 
+    onPress={() => router.push('/profile-edit')} 
+    style={styles.editButton}>
+      <SymbolView 
+      name={{ ios: 'square.and.pencil', android: 'edit', web: 'edit' }} 
+      size={14} tintColor="#7C3AED" />
+      <Text style={styles.editText}>Edit</Text>
+      </Pressable></View>
+    <ScrollView contentContainerStyle={styles.content} 
+    showsVerticalScrollIndicator={false}>
+      <View style={styles.profileCard}>
+        <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{userInitials}
+
+        </Text>
+        </View>
+        <View style={styles.profileCopy}>
+
+          <Text style={styles.name}>{userName}</Text>
+          <Text style={styles.role}>{userRole}</Text>
+          <Text style={styles.company}>{userCompany}</Text>
+
+      <View style={styles.verified}>
+        <SymbolView name={{ ios: 'checkmark', android: 'check', web: 'check' }} size={10} tintColor="#FFF" /><Text style={styles.verifiedText}>Verified Attendee</Text></View></View></View>
+      <Text style={styles.section}>Account Information</Text>
+      <View style={styles.accountCard}><InfoRow label="Conference" value="Cloud Adoption Summit 2026" locked /><InfoRow label="Eventbrite Ticket ID" value="EB-012345-801" ticket /><InfoRow label="Email Address" value={userEmail} locked /></View><Text style={styles.note}>These fields are set at registration and cannot be changed.</Text>
+      <Text style={styles.section}>Personal Details</Text>
+      <View style={styles.personalCard}>{personalDetails.map(([label, value], index) => <View key={label} style={[styles.personalRow, index < personalDetails.length - 1 && styles.divider]}><Text style={styles.personalLabel}>{label}</Text><Text style={label === 'LinkedIn' ? styles.link : styles.personalValue}>{value}</Text></View>)}</View>
+      <Text style={styles.section}>Notifications</Text>
+      <View style={styles.notificationCard}><View style={styles.bell}>
+        <SymbolView name={{ ios: 'bell', android: 'notifications', web: 'notifications' }} size={17} tintColor="#7C3AED" /></View><View style={styles.notifyCopy}><Text style={styles.notifyTitle}>Push Notifications</Text><Text style={styles.notifyDetail}>Session reminders & announcements</Text></View><Pressable accessibilityLabel="Push notifications" accessibilityRole="switch" accessibilityState={{ checked: pushNotificationsEnabled }} hitSlop={8} onPress={() => setPushNotificationsEnabled((enabled) => !enabled)} style={[styles.toggle, !pushNotificationsEnabled && styles.toggleOff]}><View style={styles.knob} /></Pressable></View>
       <Pressable accessibilityLabel="Sign out" accessibilityRole="button" onPress={handleSignOut} style={styles.signOut}><Text style={styles.signOutText}>Sign Out</Text></Pressable><Text style={styles.version}>Cloud Adoption Solutions · v1.0.0</Text>
     </ScrollView>
     <View style={styles.tabBar}><Pressable onPress={() => router.replace('/dashboard')} style={styles.tab}><SymbolView name={{ ios: 'house', android: 'home', web: 'home' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Home</Text></Pressable><Pressable onPress={() => router.replace('/agenda')} style={styles.tab}><SymbolView name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Agenda</Text></Pressable><Pressable accessibilityLabel="Charts" accessibilityRole="link" onPress={() => router.replace('/charts')} style={styles.tab}><SymbolView name={{ ios: 'chart.bar', android: 'bar_chart', web: 'bar_chart' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Charts</Text></Pressable><Pressable accessibilityLabel="People" accessibilityRole="link" onPress={() => router.replace('/people')} style={styles.tab}><SymbolView name={{ ios: 'person.2', android: 'group', web: 'group' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>People</Text></Pressable><Pressable onPress={() => router.replace('/saved')} style={styles.tab}><SymbolView name={{ ios: 'bookmark', android: 'bookmark', web: 'bookmark' }} size={18} tintColor="#64748B" /><Text style={styles.tabText}>Saved</Text></Pressable><View style={styles.tabActive}><SymbolView name={{ ios: 'person.fill', android: 'person', web: 'person' }} size={18} tintColor="#7B3FF0" /><Text style={styles.tabActiveText}>Profile</Text></View></View>
