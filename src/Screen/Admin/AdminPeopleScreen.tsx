@@ -1,96 +1,308 @@
-import { SymbolView } from 'expo-symbols';
-import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import AdminBottomNav from './AdminBottomNav';
+// import { SymbolView } from 'expo-symbols';
+// import { StatusBar } from 'expo-status-bar';
+// import { useRouter } from 'expo-router';
+// import { useState } from 'react';
+// import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+// import { SafeAreaView } from 'react-native-safe-area-context';
+// import AdminBottomNav from './AdminBottomNav';
 
-type Person = {
-  initials: string;
-  name: string;
-  role: string;
-  company: string;
-  email: string;
-  ticket: string;
-  phone: string;
-  color: string;
-  submitted: string;
-};
+// type Person = {
+//   initials: string;
+//   name: string;
+//   role: string;
+//   company: string;
+//   email: string;
+//   ticket: string;
+//   phone: string;
+//   color: string;
+//   submitted: string;
+// };
+
+// type ReviewStatus = 'pending' | 'approved' | 'rejected';
+
+// const pendingPeople: Person[] = [
+//   {
+//     initials: 'AJ',
+//     name: 'Alex Johnson',
+//     role: 'Senior Cloud Consultant',
+//     company: 'Accenture',
+//     email: 'alex.j@accenture.com',
+//     ticket: 'EB-2025-4821',
+//     phone: '+1 (617) 555-0142',
+//     color: '#7C3AED',
+//     submitted: 'Submitted 2 hours ago',
+//   },
+//   {
+//     initials: 'NS',
+//     name: 'Nina Shah',
+//     role: 'Database Cloud Architect',
+//     company: 'Oracle',
+//     email: 'nina.shah@oracle.com',
+//     ticket: 'EB-2025-4822',
+//     phone: '+1 (650) 555-0196',
+//     color: '#00A878',
+//     submitted: 'Submitted 5 hours ago',
+//   },
+//   {
+//     initials: 'CT',
+//     name: 'Chris Taylor',
+//     role: 'Cloud Engineer',
+//     company: 'Capgemini',
+//     email: 'c.taylor@capgemini.com',
+//     ticket: 'EB-2025-4823',
+//     phone: '+1 (214) 555-0177',
+//     color: '#E98200',
+//     submitted: 'Submitted 1 day ago',
+//   },
+// ];
+
+// const initialStatuses: Record<string, ReviewStatus> = {
+//   'EB-2025-4821': 'pending',
+//   'EB-2025-4822': 'pending',
+//   'EB-2025-4823': 'pending',
+// };
+
+// function WatchlistCard({ person, status, onReview }: { person: Person; status: ReviewStatus; onReview: (status: ReviewStatus) => void }) {
+//   return (
+//     <View style={styles.card}>
+//       <View style={styles.cardHeader}>
+//         <View style={[styles.avatar, { backgroundColor: person.color }]}>
+//           <Text style={styles.avatarText}>{person.initials}</Text>
+//         </View>
+//         <View style={styles.personInfo}>
+//           <View style={styles.nameRow}>
+//             <Text style={styles.name}>{person.name}</Text>
+//             <Text style={[styles.statusBadge, status === 'pending' && styles.pending, status === 'approved' && styles.approved, status === 'rejected' && styles.rejected]}>{status}</Text>
+//           </View>
+//           <Text style={styles.role}>{person.role} · {person.company}</Text>
+//         </View>
+//       </View>
+//       <View style={styles.divider} />
+//       <Text style={styles.detail}>✉ {person.email}</Text>
+//       <Text style={styles.detail}># {person.ticket}</Text>
+//       <Text style={styles.detail}>▣ Cloud Adoption Summit 2025</Text>
+//       <Text style={styles.detail}>⌕ {person.phone}</Text>
+//       <Text style={styles.link}>♧ LinkedIn Profile ↗</Text>
+//       <Text style={styles.submitted}>{person.submitted}</Text>
+//       <View style={styles.actionRow}>
+//         <Pressable accessibilityLabel={`Approve ${person.name}`} accessibilityRole="button" onPress={() => onReview('approved')} style={styles.approve}>
+//           <Text style={styles.actionText}>♧ Approve</Text>
+//         </Pressable>
+//         <Pressable accessibilityLabel={`Reject ${person.name}`} accessibilityRole="button" onPress={() => onReview('rejected')} style={styles.reject}>
+//           <Text style={styles.actionText}>♧ Reject</Text>
+//         </Pressable>
+//       </View>
+//     </View>
+//   );
+// }
+
+// export default function AdminPeopleScreen() {
+//   const router = useRouter();
+//   const [statuses, setStatuses] = useState(initialStatuses);
+//   const [activeFilter, setActiveFilter] = useState<ReviewStatus>('pending');
+//   const counts = (Object.values(statuses) as ReviewStatus[]).reduce<Record<ReviewStatus, number>>((result, status) => ({ ...result, [status]: result[status] + 1 }), { pending: 0, approved: 0, rejected: 0 });
+//   const visiblePeople = pendingPeople.filter((person) => statuses[person.ticket] === activeFilter);
+
+//   const reviewPerson = (ticket: string, status: ReviewStatus) => {
+//     setStatuses((current) => ({ ...current, [ticket]: status }));
+//     setActiveFilter(status);
+//   };
+
+//   return (
+//     <View style={styles.screen}>
+//       <StatusBar style="dark" />
+//       <SafeAreaView style={styles.safeArea}>
+//         <View style={styles.header}>
+//           <Text style={styles.headerTitle}>Watchlist</Text>
+//         </View>
+//         <ScrollView contentContainerStyle={styles.content}>
+//           <View style={styles.titleRow}>
+//             <View>
+//               <Text style={styles.title}>Watchlist</Text>
+//               <Text style={styles.subtitle}>6 total entries</Text>
+//             </View>
+//             <Pressable accessibilityLabel="View all people" accessibilityRole="button" onPress={() => router.push('/admin-all-people')} style={styles.allPeople}>
+//               <SymbolView
+//                 name={{ ios: 'person.2', android: 'group', web: 'group' }}
+//                 size={14}
+//                 tintColor="#7C3AED"
+//               />
+//               <Text style={styles.allPeopleText}>All People</Text>
+//             </Pressable>
+//           </View>
+//           <View style={styles.filterRow}>
+//             {(['pending', 'approved', 'rejected'] as ReviewStatus[]).map((filter) => <Pressable key={filter} accessibilityRole="button" onPress={() => setActiveFilter(filter)} style={[styles.filterButton, activeFilter === filter && styles.activeFilter]}><Text style={[styles.filter, activeFilter === filter && styles.activeFilterText]}>{filter[0].toUpperCase() + filter.slice(1)} ({counts[filter]})</Text></Pressable>)}
+//           </View>
+//           {visiblePeople.map((person) => (
+//             <WatchlistCard key={person.ticket} person={person} status={statuses[person.ticket]} onReview={(status) => reviewPerson(person.ticket, status)} />
+//           ))}
+//           {visiblePeople.length === 0 ? <View style={styles.emptyState}><Text style={styles.emptyText}>No {activeFilter} entries.</Text></View> : null}
+//         </ScrollView>
+//         <AdminBottomNav active="people" />
+//       </SafeAreaView>
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   screen: { flex: 1, backgroundColor: '#F7F8FC' },
+//   safeArea: { flex: 1 },
+//   header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' },
+//   headerTitle: { fontSize: 13, fontWeight: '800', color: '#1D2639' },
+//   content: { padding: 12, paddingBottom: 72 },
+//   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+//   title: { fontSize: 23, fontWeight: '800', color: '#1D2639' },
+//   subtitle: { fontSize: 10, color: '#718098', marginTop: 3 },
+//   allPeople: { flexDirection: 'row', gap: 5, alignItems: 'center', backgroundColor: '#F0E9FF', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 16 },
+//   allPeopleText: { fontSize: 10, fontWeight: '700', color: '#7C3AED' },
+//   filterRow: { height: 31, marginTop: 10, marginBottom: 10, padding: 3, borderRadius: 8, backgroundColor: '#E9EDF3', flexDirection: 'row', justifyContent: 'space-between' },
+//   filterButton: { flex: 1, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+//   activeFilter: { backgroundColor: '#FFF' },
+//   activeFilterText: { color: '#253046', fontWeight: '800' },
+//   filter: { fontSize: 9, color: '#60718A' },
+//   card: { marginBottom: 11, borderRadius: 13, padding: 12, backgroundColor: '#FFF', shadowColor: '#34425D', shadowOpacity: 0.07, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+//   cardHeader: { flexDirection: 'row', alignItems: 'center' },
+//   avatar: { height: 34, width: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+//   avatarText: { color: '#FFF', fontSize: 11, fontWeight: '800' },
+//   personInfo: { marginLeft: 9, flex: 1 },
+//   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+//   name: { fontSize: 11, fontWeight: '800', color: '#253046' },
+//   statusBadge: { fontSize: 8, textTransform: 'capitalize', fontWeight: '800', color: '#FFF', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 7, overflow: 'hidden' },
+//   pending: { backgroundColor: '#E98200' },
+//   approved: { backgroundColor: '#00A878' },
+//   rejected: { backgroundColor: '#E92A2A' },
+//   role: { fontSize: 9, color: '#65758C', marginTop: 3 },
+//   divider: { height: StyleSheet.hairlineWidth, backgroundColor: '#E5E9F0', marginVertical: 10 },
+//   detail: { fontSize: 9, color: '#44536A', marginBottom: 6 },
+//   link: { fontSize: 9, color: '#7140E5', marginBottom: 8 },
+//   submitted: { fontSize: 8, color: '#708098' },
+//   actionRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
+//   approve: { flex: 1, height: 30, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#00A878' },
+//   reject: { flex: 1, height: 30, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E92A2A' },
+//   actionText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
+//   emptyState: { paddingVertical: 30, alignItems: 'center' },
+//   emptyText: { fontSize: 11, color: '#718098' },
+//   tabBar: { height: 62, backgroundColor: '#000', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
+//   tabText: { color: '#FFF', fontSize: 9 },
+//   activeTab: { alignItems: 'center', borderRadius: 17, backgroundColor: '#7C3AED', paddingHorizontal: 10, paddingVertical: 5 },
+//   activeText: { fontSize: 8, color: '#FFF' },
+// });
+
+
+
+
+
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../context/AuthContext';
+import { registrationApi, type RegistrationEntry } from '../../services/api';
+import AdminBottomNav from './AdminBottomNav';
 
 type ReviewStatus = 'pending' | 'approved' | 'rejected';
 
-const pendingPeople: Person[] = [
-  {
-    initials: 'AJ',
-    name: 'Alex Johnson',
-    role: 'Senior Cloud Consultant',
-    company: 'Accenture',
-    email: 'alex.j@accenture.com',
-    ticket: 'EB-2025-4821',
-    phone: '+1 (617) 555-0142',
-    color: '#7C3AED',
-    submitted: 'Submitted 2 hours ago',
-  },
-  {
-    initials: 'NS',
-    name: 'Nina Shah',
-    role: 'Database Cloud Architect',
-    company: 'Oracle',
-    email: 'nina.shah@oracle.com',
-    ticket: 'EB-2025-4822',
-    phone: '+1 (650) 555-0196',
-    color: '#00A878',
-    submitted: 'Submitted 5 hours ago',
-  },
-  {
-    initials: 'CT',
-    name: 'Chris Taylor',
-    role: 'Cloud Engineer',
-    company: 'Capgemini',
-    email: 'c.taylor@capgemini.com',
-    ticket: 'EB-2025-4823',
-    phone: '+1 (214) 555-0177',
-    color: '#E98200',
-    submitted: 'Submitted 1 day ago',
-  },
-];
+const AVATAR_COLORS = ['#7C3AED', '#00A878', '#E98200', '#8B55ED', '#E51D47', '#0B98B5'];
 
-const initialStatuses: Record<string, ReviewStatus> = {
-  'EB-2025-4821': 'pending',
-  'EB-2025-4822': 'pending',
-  'EB-2025-4823': 'pending',
-};
+// Alert.alert is a no-op on react-native-web, so route through browser dialogs there.
+function notify(title: string, message: string) {
+  if (Platform.OS === 'web') {
+    (globalThis as any).alert(`${title}\n\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+}
 
-function WatchlistCard({ person, status, onReview }: { person: Person; status: ReviewStatus; onReview: (status: ReviewStatus) => void }) {
+function submittedLabel(createdAt?: string) {
+  if (!createdAt) return '';
+  const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return '';
+  const hours = Math.floor((Date.now() - created.getTime()) / 3600000);
+  if (hours < 1) return 'Submitted just now';
+  if (hours < 24) return `Submitted ${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hours / 24);
+  return `Submitted ${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+function WatchlistCard({
+  entry,
+  color,
+  onReview,
+  busy,
+}: {
+  entry: RegistrationEntry;
+  color: string;
+  onReview: (status: 'approved' | 'rejected') => void;
+  busy: boolean;
+}) {
+  const name = entry.user?.name || 'Attendee';
+  const initials = name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+  const roleLine = [entry.user?.designation, entry.user?.company_name].filter(Boolean).join(' · ');
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <View style={[styles.avatar, { backgroundColor: person.color }]}>
-          <Text style={styles.avatarText}>{person.initials}</Text>
+        <View style={[styles.avatar, { backgroundColor: color }]}>
+          <Text style={styles.avatarText}>{initials}</Text>
         </View>
         <View style={styles.personInfo}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{person.name}</Text>
-            <Text style={[styles.statusBadge, status === 'pending' && styles.pending, status === 'approved' && styles.approved, status === 'rejected' && styles.rejected]}>{status}</Text>
+            <Text style={styles.name}>{name}</Text>
+            <Text
+              style={[
+                styles.statusBadge,
+                entry.approval_status === 'pending' && styles.pending,
+                entry.approval_status === 'approved' && styles.approved,
+                entry.approval_status === 'rejected' && styles.rejected,
+              ]}
+            >
+              {entry.approval_status}
+            </Text>
           </View>
-          <Text style={styles.role}>{person.role} · {person.company}</Text>
+          {roleLine ? <Text style={styles.role}>{roleLine}</Text> : null}
         </View>
       </View>
       <View style={styles.divider} />
-      <Text style={styles.detail}>✉ {person.email}</Text>
-      <Text style={styles.detail}># {person.ticket}</Text>
-      <Text style={styles.detail}>▣ Cloud Adoption Summit 2025</Text>
-      <Text style={styles.detail}>⌕ {person.phone}</Text>
-      <Text style={styles.link}>♧ LinkedIn Profile ↗</Text>
-      <Text style={styles.submitted}>{person.submitted}</Text>
+      <Text style={styles.detail}>✉ {entry.user?.email || '-'}</Text>
+      <Text style={styles.detail}># {entry.ticket_reference || '-'}</Text>
+      <Text style={styles.detail}>▣ {entry.conference?.title || '-'}</Text>
+      {entry.user?.phone ? <Text style={styles.detail}>⌕ {entry.user.phone}</Text> : null}
+      {entry.user?.linkedin_url ? (
+        <Pressable onPress={() => Linking.openURL(entry.user.linkedin_url as string)}>
+          <Text style={styles.link}>♧ LinkedIn Profile ↗</Text>
+        </Pressable>
+      ) : null}
+      <Text style={styles.submitted}>{submittedLabel(entry.created_at)}</Text>
       <View style={styles.actionRow}>
-        <Pressable accessibilityLabel={`Approve ${person.name}`} accessibilityRole="button" onPress={() => onReview('approved')} style={styles.approve}>
-          <Text style={styles.actionText}>♧ Approve</Text>
-        </Pressable>
-        <Pressable accessibilityLabel={`Reject ${person.name}`} accessibilityRole="button" onPress={() => onReview('rejected')} style={styles.reject}>
-          <Text style={styles.actionText}>♧ Reject</Text>
-        </Pressable>
+        {entry.approval_status !== 'approved' ? (
+          <Pressable
+            accessibilityLabel={`Approve ${name}`}
+            accessibilityRole="button"
+            disabled={busy}
+            onPress={() => onReview('approved')}
+            style={[styles.approve, busy && styles.busy]}
+          >
+            <Text style={styles.actionText}>{busy ? '...' : '✓ Approve'}</Text>
+          </Pressable>
+        ) : null}
+        {entry.approval_status !== 'rejected' ? (
+          <Pressable
+            accessibilityLabel={`Reject ${name}`}
+            accessibilityRole="button"
+            disabled={busy}
+            onPress={() => onReview('rejected')}
+            style={[styles.reject, busy && styles.busy]}
+          >
+            <Text style={styles.actionText}>{busy ? '...' : '✕ Reject'}</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -98,14 +310,61 @@ function WatchlistCard({ person, status, onReview }: { person: Person; status: R
 
 export default function AdminPeopleScreen() {
   const router = useRouter();
-  const [statuses, setStatuses] = useState(initialStatuses);
+  const { user } = useAuth();
+  const [entries, setEntries] = useState<RegistrationEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState('');
   const [activeFilter, setActiveFilter] = useState<ReviewStatus>('pending');
-  const counts = (Object.values(statuses) as ReviewStatus[]).reduce<Record<ReviewStatus, number>>((result, status) => ({ ...result, [status]: result[status] + 1 }), { pending: 0, approved: 0, rejected: 0 });
-  const visiblePeople = pendingPeople.filter((person) => statuses[person.ticket] === activeFilter);
+  const [busyId, setBusyId] = useState<number | null>(null);
 
-  const reviewPerson = (ticket: string, status: ReviewStatus) => {
-    setStatuses((current) => ({ ...current, [ticket]: status }));
-    setActiveFilter(status);
+  const load = useCallback(async () => {
+    if (!user?.token) return;
+    setLoading(true);
+    try {
+      const res = await registrationApi.list(user.token);
+      setEntries(res.data || []);
+      setListError('');
+    } catch (e) {
+      setListError(e instanceof Error ? e.message : 'Failed to load registrations.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.token]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const counts = entries.reduce<Record<ReviewStatus, number>>(
+    (result, entry) => {
+      const key = (entry.approval_status || 'pending') as ReviewStatus;
+      result[key] = (result[key] || 0) + 1;
+      return result;
+    },
+    { pending: 0, approved: 0, rejected: 0 },
+  );
+
+  const visibleEntries = entries.filter((entry) => entry.approval_status === activeFilter);
+
+  const review = async (entry: RegistrationEntry, status: 'approved' | 'rejected') => {
+    if (!user?.token) return;
+    setBusyId(entry.id);
+    try {
+      await registrationApi.updateApproval(user.token, entry.id, status);
+      setEntries((current) =>
+        current.map((item) => (item.id === entry.id ? { ...item, approval_status: status } : item)),
+      );
+      notify(
+        status === 'approved' ? 'Approved' : 'Rejected',
+        status === 'approved'
+          ? `${entry.user?.name || 'User'} can now log in to the app.`
+          : `${entry.user?.name || 'User'} has been rejected and cannot log in.`,
+      );
+    } catch (e) {
+      notify('Error', e instanceof Error ? e.message : 'Failed to update registration.');
+    } finally {
+      setBusyId(null);
+    }
   };
 
   return (
@@ -119,24 +378,59 @@ export default function AdminPeopleScreen() {
           <View style={styles.titleRow}>
             <View>
               <Text style={styles.title}>Watchlist</Text>
-              <Text style={styles.subtitle}>6 total entries</Text>
+              <Text style={styles.subtitle}>
+                {entries.length} total entr{entries.length === 1 ? 'y' : 'ies'}
+              </Text>
             </View>
-            <Pressable accessibilityLabel="View all people" accessibilityRole="button" onPress={() => router.push('/admin-all-people')} style={styles.allPeople}>
+            <Pressable accessibilityLabel="Refresh" accessibilityRole="button" onPress={load} style={styles.allPeople}>
               <SymbolView
-                name={{ ios: 'person.2', android: 'group', web: 'group' }}
+                name={{ ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' }}
                 size={14}
                 tintColor="#7C3AED"
               />
-              <Text style={styles.allPeopleText}>All People</Text>
+              <Text style={styles.allPeopleText}>Refresh</Text>
             </Pressable>
           </View>
           <View style={styles.filterRow}>
-            {(['pending', 'approved', 'rejected'] as ReviewStatus[]).map((filter) => <Pressable key={filter} accessibilityRole="button" onPress={() => setActiveFilter(filter)} style={[styles.filterButton, activeFilter === filter && styles.activeFilter]}><Text style={[styles.filter, activeFilter === filter && styles.activeFilterText]}>{filter[0].toUpperCase() + filter.slice(1)} ({counts[filter]})</Text></Pressable>)}
+            {(['pending', 'approved', 'rejected'] as ReviewStatus[]).map((filter) => (
+              <Pressable
+                key={filter}
+                accessibilityRole="button"
+                onPress={() => setActiveFilter(filter)}
+                style={[styles.filterButton, activeFilter === filter && styles.activeFilter]}
+              >
+                <Text style={[styles.filter, activeFilter === filter && styles.activeFilterText]}>
+                  {filter[0].toUpperCase() + filter.slice(1)} ({counts[filter]})
+                </Text>
+              </Pressable>
+            ))}
           </View>
-          {visiblePeople.map((person) => (
-            <WatchlistCard key={person.ticket} person={person} status={statuses[person.ticket]} onReview={(status) => reviewPerson(person.ticket, status)} />
+
+          {loading ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Loading registrations...</Text>
+            </View>
+          ) : null}
+          {listError ? (
+            <View style={styles.emptyState}>
+              <Text style={[styles.emptyText, { color: '#D92D3A' }]}>{listError}</Text>
+            </View>
+          ) : null}
+
+          {visibleEntries.map((entry, index) => (
+            <WatchlistCard
+              key={entry.id}
+              entry={entry}
+              color={AVATAR_COLORS[index % AVATAR_COLORS.length]}
+              busy={busyId === entry.id}
+              onReview={(status) => review(entry, status)}
+            />
           ))}
-          {visiblePeople.length === 0 ? <View style={styles.emptyState}><Text style={styles.emptyText}>No {activeFilter} entries.</Text></View> : null}
+          {!loading && !listError && visibleEntries.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No {activeFilter} entries.</Text>
+            </View>
+          ) : null}
         </ScrollView>
         <AdminBottomNav active="people" />
       </SafeAreaView>
@@ -179,11 +473,8 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
   approve: { flex: 1, height: 30, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#00A878' },
   reject: { flex: 1, height: 30, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E92A2A' },
+  busy: { opacity: 0.6 },
   actionText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
   emptyState: { paddingVertical: 30, alignItems: 'center' },
   emptyText: { fontSize: 11, color: '#718098' },
-  tabBar: { height: 62, backgroundColor: '#000', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
-  tabText: { color: '#FFF', fontSize: 9 },
-  activeTab: { alignItems: 'center', borderRadius: 17, backgroundColor: '#7C3AED', paddingHorizontal: 10, paddingVertical: 5 },
-  activeText: { fontSize: 8, color: '#FFF' },
 });
