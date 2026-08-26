@@ -1,8 +1,11 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../context/AuthContext';
+import { adminApi, registrationApi, type RegistrationEntry } from '../../services/api';
 import AdminBottomNav from './AdminBottomNav';
 
 type MetricCardProps = {
@@ -12,11 +15,18 @@ type MetricCardProps = {
   detail: string;
   backgroundColor: string;
   tintColor: string;
+  onPress?: () => void;
 };
 
-function MetricCard({ icon, value, title, detail, backgroundColor, tintColor }: MetricCardProps) {
+function MetricCard({ icon, value, title, detail, backgroundColor, tintColor, onPress }: MetricCardProps) {
   return (
-    <View style={[styles.metricCard, { backgroundColor }]}>
+    <Pressable
+      accessibilityLabel={onPress ? `View ${title.toLowerCase()}` : undefined}
+      accessibilityRole={onPress ? 'button' : undefined}
+      disabled={!onPress}
+      onPress={onPress}
+      style={[styles.metricCard, { backgroundColor }]}
+    >
       <View style={styles.metricIcon}>
         <SymbolView name={icon as never} size={21} tintColor={tintColor} />
       </View>
@@ -26,12 +36,90 @@ function MetricCard({ icon, value, title, detail, backgroundColor, tintColor }: 
         <Text style={styles.metricDetail}>{detail}</Text>
       </View>
       <Text style={[styles.chevron, { color: tintColor }]}>›</Text>
-    </View>
+    </Pressable>
   );
 }
 
 export default function AdminDashboardScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [activeConferenceCount, setActiveConferenceCount] = useState<number | null>(null);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [attendeeCount, setAttendeeCount] = useState<number | null>(null);
+  const [recentRegistrations, setRecentRegistrations] = useState<RegistrationEntry[]>([]);
+
+  const loadDashboardData = useCallback(async () => {
+    if (!user?.token) {
+      setPendingCount(null);
+      setRecentRegistrations([]);
+      return;
+    }
+
+    try {
+      const response = await registrationApi.list(user.token);
+      const registrations = response.data || [];
+      const pendingEntries = registrations.filter(
+        (entry) => entry.approval_status === 'pending',
+      );
+      setPendingCount(pendingEntries.length);
+      const newestFirst = [...registrations].sort(
+        (first, second) =>
+          new Date(second.created_at || 0).getTime() - new Date(first.created_at || 0).getTime(),
+      );
+      const priorityEntries = [
+        newestFirst.find((entry) => entry.approval_status === 'pending'),
+        newestFirst.find((entry) => entry.approval_status === 'approved'),
+      ].filter((entry): entry is RegistrationEntry => Boolean(entry));
+      const additionalEntries = newestFirst.filter(
+        (entry) => !priorityEntries.some((priorityEntry) => priorityEntry.id === entry.id),
+      );
+
+      setRecentRegistrations([...priorityEntries, ...additionalEntries].slice(0, 2));
+    } catch {
+      setPendingCount(null);
+      setRecentRegistrations([]);
+    }
+  }, [user?.token]);
+
+  const loadActiveConferenceCount = useCallback(async () => {
+    if (!user?.token) {
+      setActiveConferenceCount(null);
+      return;
+    }
+
+    try {
+      const response = await adminApi.conferences(user.token);
+      const conferences = response.data || [];
+      setActiveConferenceCount(
+        conferences.filter((conference) => conference.status === 'active').length,
+      );
+    } catch {
+      setActiveConferenceCount(null);
+    }
+  }, [user?.token]);
+
+  const loadAttendeeCount = useCallback(async () => {
+    if (!user?.token) {
+      setAttendeeCount(null);
+      return;
+    }
+
+    try {
+      const response = await adminApi.conferenceAttendees(user.token);
+      setAttendeeCount(response.meta?.total ?? (Array.isArray(response.data) ? response.data.length : 0));
+    } catch {
+      setAttendeeCount(null);
+    }
+  }, [user?.token]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadDashboardData();
+      void loadAttendeeCount();
+      void loadActiveConferenceCount();
+    }, [loadActiveConferenceCount, loadAttendeeCount, loadDashboardData]),
+  );
+
   return (
     <View style={styles.screen}>
       <StatusBar style="dark" />
@@ -55,22 +143,29 @@ export default function AdminDashboardScreen() {
             </Text>
 
           <MetricCard icon={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} 
-          value="1" title="Active Conferences" 
+          value={activeConferenceCount === null ? '–' : String(activeConferenceCount)} title="Active Conferences"
           detail="Currently running" backgroundColor="#F2ECFF" 
-          tintColor="#7C3AED" />
+          tintColor="#7C3AED"
+          onPress={() => router.push('/admin-events')} />
 
           <MetricCard icon={{ ios: 'clock', android: 'schedule', web: 'schedule' }} 
-          value="3" title="Pending Approvals" detail="Require your attention" 
-          backgroundColor="#FFF3E5" tintColor="#E98200" />
+          value={pendingCount === null ? '–' : String(pendingCount)} title="Pending Approvals" detail="Require your attention"
+          backgroundColor="#FFF3E5" tintColor="#E98200"
+          onPress={() => router.push('/admin-people')} />
 
           <MetricCard icon={{ ios: 'person.2', android: 'group', web: 'group' }} 
-          value="17" title="Total Users" detail="All registered" 
+          value={attendeeCount === null ? '–' : String(attendeeCount)} title="Total Users" detail="All registered"
           backgroundColor="#E5F8F3" tintColor="#00A878" />
 
          <Text style={styles.sectionTitle}>Quick Actions</Text>
 
 <View style={styles.actionsGrid}>
-  <Pressable style={[styles.actionCard, styles.createCard]}>
+  <Pressable
+    accessibilityLabel="Create conference"
+    accessibilityRole="button"
+    onPress={() => router.push('/admin-events')}
+    style={[styles.actionCard, styles.createCard]}
+  >
     <View style={[styles.actionIcon, styles.createIcon]}>
       <SymbolView
         name={{
@@ -86,7 +181,12 @@ export default function AdminDashboardScreen() {
     <Text style={styles.actionText}>Create Conference</Text>
   </Pressable>
 
-  <Pressable style={[styles.actionCard, styles.watchlistCard]}>
+  <Pressable
+    accessibilityLabel="Open watchlist"
+    accessibilityRole="button"
+    onPress={() => router.push('/admin-people')}
+    style={[styles.actionCard, styles.watchlistCard]}
+  >
     <View style={[styles.actionIcon, styles.watchlistIcon]}>
       <SymbolView
         name={{
@@ -136,9 +236,48 @@ export default function AdminDashboardScreen() {
 </View>
 
           <Text style={styles.sectionTitle}>Recent Registrations</Text>
-          {['Nina Shah', 'Chris Taylor'].map((name) => (
+          {recentRegistrations.map((registration) => {
+            const name = registration.user?.name || 'Attendee';
+            const initials = name
+              .split(' ')
+              .map((part) => part[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2);
+            const status = registration.approval_status || 'pending';
+            const registrationDetail = [registration.user?.company_name, registration.ticket_reference]
+              .filter(Boolean)
+              .join(' - ');
+
+            return (
+              <View key={registration.id} style={styles.userRow}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{initials}</Text>
+                </View>
+                <View style={styles.userInfo}>
+                  <Text style={styles.userName}>{name}</Text>
+                  <Text style={styles.userDetail}>{registrationDetail || 'Registration pending'}</Text>
+                </View>
+                <Text
+                  style={[
+                    styles.pending,
+                    status === 'approved' && styles.approvedRegistration,
+                    status === 'rejected' && styles.rejectedRegistration,
+                  ]}
+                >
+                  {status[0].toUpperCase() + status.slice(1)}
+                </Text>
+              </View>
+            );
+          })}
+          {pendingCount !== null && recentRegistrations.length === 0 ? (
+            <View style={styles.emptyRegistrations}>
+              <Text style={styles.emptyRegistrationsText}>No registrations yet.</Text>
+            </View>
+          ) : null}
+          {/* Legacy mock rows removed; registrations are rendered from the API above.
             <View key={name} style={styles.userRow}><View style={styles.avatar}><Text style={styles.avatarText}>{name.split(' ').map((part) => part[0]).join('')}</Text></View><View style={styles.userInfo}><Text style={styles.userName}>{name}</Text><Text style={styles.userDetail}>Capgemini · EB-2025-4821</Text></View><Text style={styles.pending}>Pending</Text></View>
-          ))}
+          */}
         </ScrollView>
 
         <AdminBottomNav active="home" />
@@ -341,6 +480,11 @@ exportIcon: {
     fontSize: 8, 
     fontWeight: '800', 
     backgroundColor: '#E98200' }, 
+
+  approvedRegistration: { backgroundColor: '#00A878' },
+  rejectedRegistration: { backgroundColor: '#E92A2A' },
+  emptyRegistrations: { paddingVertical: 18, alignItems: 'center', backgroundColor: '#FFFFFF' },
+  emptyRegistrationsText: { color: '#738198', fontSize: 11 },
 
   tabBar: { 
     height: 62, 

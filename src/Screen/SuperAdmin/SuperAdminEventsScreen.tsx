@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 
 type Conference = {
   active: boolean;
@@ -69,11 +70,7 @@ export default function SuperAdminEventsScreen() {
           {newConferenceVisible && <ConferenceCard conference={{ active: false, attendees: 0, date: 'Choose event dates', location: 'Choose a venue', sessions: 0, title: 'New Conference' }} />}
           {conferences.map((conference) => <ConferenceCard conference={conference} key={conference.title} />)}
         </View>
-        <View style={styles.tabBar}>
-          <Pressable accessibilityLabel="Home" onPress={() => router.replace('/superadmin-dashboard')} style={styles.tab}><SymbolView name={{ ios: 'house', android: 'home', web: 'home' }} size={15} tintColor="#FFFFFF" /><Text style={styles.tabText}>Home</Text></Pressable>
-          <View style={[styles.tab, styles.activeTab]}><SymbolView name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} size={15} tintColor="#FFFFFF" /><Text style={styles.tabText}>Events</Text></View>
-          {['People', 'Tools', 'Users', 'Profile'].map((label, index) => <View key={label} style={styles.tab}><SymbolView name={{ ios: index === 1 ? 'slider.horizontal.3' : index === 3 ? 'person' : 'person.2', android: index === 1 ? 'tune' : index === 3 ? 'person' : 'group', web: index === 1 ? 'tune' : index === 3 ? 'person' : 'group' }} size={15} tintColor="#FFFFFF" /><Text style={styles.tabText}>{label}</Text></View>)}
-        </View>
+        <SuperAdminTabBar activeTab="Events" />
       </SafeAreaView>
     </View>
   );

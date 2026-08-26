@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 
 const stats = [
   { label: 'Active Conferences', detail: 'Currently running', value: '1', icon: 'calendar', color: '#7C3AED' },
@@ -34,7 +35,7 @@ export default function SuperAdminDashboardScreen() {
           <Text style={styles.sectionTitle}>RECENT USER ACTIVITY</Text>
           <View style={styles.activityCard}>{[['AJ','Alex Johnson','Accenture · EB-2025-4821','#7C3AED'],['NS','Nina Shah','Oracle · EB-2025-4822','#00A878'],['CT','Chris Taylor','Capgemini · EB-2025-4823','#D97706']].map(([initials,name,detail,color]) => <View key={name} style={styles.activityRow}><View style={[styles.activityAvatar,{backgroundColor:color}]}><Text style={styles.activityAvatarText}>{initials}</Text></View><View style={styles.activityCopy}><Text style={styles.activityName}>{name}</Text><Text style={styles.activityDetail}>{detail}</Text></View><Text style={styles.pending}>Pending</Text></View>)}</View>
         </ScrollView>
-        <View style={styles.footer}>{[['Home','house',''],['Events','calendar','/superadmin-events'],['People','person.2','/admin-people'],['Tools','slider.horizontal.3','/admin-tools'],['Users','person.2','/admin-all-people'],['Profile','person','/admin-profile']].map(([label,icon,route]) => <Pressable key={label} accessibilityLabel={label} onPress={() => route && router.replace(route as never)} style={[styles.footerTab, label === 'Home' && styles.footerActive]}><SymbolView name={{ ios: icon, android: icon === 'calendar' ? 'calendar_month' : icon === 'person.2' ? 'group' : icon === 'slider.horizontal.3' ? 'tune' : icon, web: icon === 'calendar' ? 'calendar_month' : icon === 'person.2' ? 'group' : icon === 'slider.horizontal.3' ? 'tune' : icon } as never} size={15} tintColor="#FFFFFF" /><Text style={styles.footerText}>{label}</Text></Pressable>)}</View>
+        <SuperAdminTabBar activeTab="Home" />
       </SafeAreaView>
     </View>
   );

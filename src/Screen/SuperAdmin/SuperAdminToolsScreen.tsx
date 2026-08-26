@@ -2,6 +2,7 @@ import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 
 type ManagementOption = {
   title: string;
@@ -71,17 +72,7 @@ export default function SuperAdminToolsScreen() {
           ))}
         </View>
 
-        <View style={styles.tabBar}>
-          {tabs.map((tab) => {
-            const active = tab.label === 'Users';
-            return (
-              <Pressable key={tab.label} style={[styles.tab, active && styles.activeTab]}>
-                <SymbolView name={tab.icon} size={15} tintColor="#FFFFFF" />
-                <Text style={styles.tabLabel}>{tab.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <SuperAdminTabBar activeTab="Tools" />
       </SafeAreaView>
     </View>
   );

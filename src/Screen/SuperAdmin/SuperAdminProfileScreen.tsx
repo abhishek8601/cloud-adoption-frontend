@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 
 type DetailRowProps = {
   label: string;
@@ -88,17 +89,7 @@ export default function SuperAdminProfileScreen() {
           <Pressable accessibilityLabel="Sign out" accessibilityRole="button" onPress={() => { router.dismissAll(); router.replace('/'); }} style={styles.signOutButton}><Text style={styles.signOutText}>Sign Out</Text></Pressable>
         </ScrollView>
 
-        <View style={styles.tabBar}>
-          {tabs.map((tab) => {
-            const active = tab.label === 'Profile';
-            return (
-              <Pressable key={tab.label} style={[styles.tab, active && styles.activeTab]}>
-                <SymbolView name={tab.icon} size={15} tintColor="#FFFFFF" />
-                <Text style={styles.tabLabel}>{tab.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <SuperAdminTabBar activeTab="Profile" />
       </SafeAreaView>
     </View>
   );

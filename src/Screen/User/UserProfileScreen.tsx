@@ -21,7 +21,9 @@ export default function UserProfileScreen() {
 
   const userName = user?.name || 'User';
   const userEmail = user?.email || 'user@example.com';
-  const userRole = user?.role || 'Attendee';
+  const userRole = typeof user?.role === 'string'
+    ? user.role
+    : (user?.role as unknown as { name?: string } | undefined)?.name || 'Attendee';
   const userDesignation = user?.designation || '-';
   const userCompany = user?.company_name || '-';
 

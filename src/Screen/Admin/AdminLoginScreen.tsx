@@ -218,7 +218,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -227,7 +227,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
@@ -235,6 +235,7 @@ import { api } from '../../services/api';
 
 export default function AdminLoginScreen() {
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -289,14 +290,18 @@ export default function AdminLoginScreen() {
     <View style={styles.screen}>
       <StatusBar style="light" />
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.flex}
-        >
+       <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flex}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
+>
           <ScrollView
+            ref={scrollViewRef}
+            automaticallyAdjustKeyboardInsets
             bounces={false}
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.deviceShell}>
@@ -337,6 +342,10 @@ export default function AdminLoginScreen() {
                     <TextInput
                       autoCapitalize="none"
                       onChangeText={setPassword}
+                      onFocus={() => {
+                        // Wait for the keyboard animation, then keep the focused field in view.
+                        setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 250);
+                      }}
                       placeholder="Admin password"
                       placeholderTextColor="#9CA5B5"
                       secureTextEntry={!showPassword}
@@ -369,6 +378,15 @@ export default function AdminLoginScreen() {
                   style={styles.submitButton}
                 >
                   <Text style={styles.submitText}>{isSubmitting ? 'Signing In...' : 'Sign In'}</Text>
+                </Pressable>
+
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Login as user"
+                  onPress={() => router.replace('/')}
+                  style={styles.userLoginButton}
+                >
+                  <Text style={styles.userLoginText}>Sign in as User</Text>
                 </Pressable>
 
                 {error ? (
@@ -477,4 +495,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   submitText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  userLoginButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 14,
+    paddingVertical: 8,
+  },
+  userLoginText: { color: '#2b5192', fontSize: 13, fontWeight: '700' },
 });

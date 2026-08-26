@@ -361,7 +361,8 @@ export async function apiRequest<T = any>(
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const requestUrl = path.startsWith('http') ? path : `${BASE_URL}${path}`;
+  const response = await fetch(requestUrl, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -463,7 +464,41 @@ export const api = {
 
   me: (token: string) => apiRequest<any>("/me", { token }),
 
+  updateProfile: (
+    token: string,
+    payload: {
+      name: string;
+      phone: string;
+      email?: string;
+      company_name: string;
+      designation: string;
+      city: string;
+      state: string;
+      area_of_interest: string;
+      linkedin_url: string;
+    },
+  ) =>
+    apiRequest<any>(process.env.EXPO_PUBLIC_USER_PROFILE_URL || "/profile", {
+      method: "PUT",
+      token,
+      body: payload,
+    }),
+
   logout: (token: string) => apiRequest("/logout", { method: "POST", token }),
+
+  changePassword: (
+    token: string,
+    payload: {
+      current_password: string;
+      password: string;
+      password_confirmation: string;
+    },
+  ) =>
+    apiRequest(process.env.EXPO_PUBLIC_CHANGE_PASSWORD_URL || "/change-password", {
+      method: "PUT",
+      token,
+      body: payload,
+    }),
 
   conference: (id: number, token?: string) =>
     apiRequest<ConferenceInfo>(`/conferences/${id}`, { token }),
@@ -518,6 +553,14 @@ export type Ticket = {
 };
 
 export const adminApi = {
+  conferenceAttendees: (token: string) => {
+    const endpoint = process.env.EXPO_PUBLIC_ADMIN_CONFERENCE_ATTENDEES_URL;
+    if (!endpoint) {
+      return Promise.reject(new Error('Conference attendees endpoint is not configured.'));
+    }
+    return apiRequest<unknown[]>(endpoint, { token });
+  },
+
   conferences: (token: string, search = "") =>
     apiRequest<ConferenceInfo[]>(
       `/admin/conferences?per_page=100${search ? `&search=${encodeURIComponent(search)}` : ""}`,

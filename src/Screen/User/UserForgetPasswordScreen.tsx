@@ -1,17 +1,17 @@
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,6 +25,7 @@ type ForgotPasswordResponse = {
 
 export default function UserForgetPasswordScreen() {
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -73,8 +74,7 @@ export default function UserForgetPasswordScreen() {
         throw new Error(data.message || 'Failed to process request. Please try again.');
       }
 
-      setSuccess(true);
-      setEmail('');
+      router.push({ pathname: '/verify-email', params: { email: trimmedEmail } });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Failed to process request. Please try again.');
     } finally {
@@ -86,13 +86,16 @@ export default function UserForgetPasswordScreen() {
     <View style={styles.screen}>
       <StatusBar style="light" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
         <SafeAreaView style={styles.safeArea}>
           <ScrollView
+            ref={scrollViewRef}
+            automaticallyAdjustKeyboardInsets={false}
             bounces={false}
             contentContainerStyle={styles.scrollContent}
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -167,6 +170,10 @@ export default function UserForgetPasswordScreen() {
                       editable={!isSubmitting}
                       keyboardType="email-address"
                       onChangeText={setEmail}
+                      onFocus={() => {
+                        // Ensure the field remains above the keyboard after it animates in.
+                        setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 250);
+                      }}
                       placeholder="you@company.com"
                       placeholderTextColor="#B8BECC"
                       selectionColor="#7A3FF2"
@@ -238,7 +245,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   backButton: {
     width: 40,
@@ -257,6 +264,7 @@ const styles = StyleSheet.create({
   hero: {
     alignItems: 'center',
     marginVertical: 20,
+    
   },
   logo: {
     width: 60,

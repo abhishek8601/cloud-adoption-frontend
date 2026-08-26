@@ -153,11 +153,12 @@ type ExploreCardProps = {
   detail: string;
   symbol: ComponentProps<typeof SymbolView>['name'];
   tint: string;
+  onPress: () => void;
 };
 
-function ExploreCard({ title, detail, symbol, tint }: ExploreCardProps) {
+function ExploreCard({ title, detail, symbol, tint, onPress }: ExploreCardProps) {
   return (
-    <Pressable style={styles.exploreCard}>
+    <Pressable accessibilityRole="link" onPress={onPress} style={styles.exploreCard}>
       <View style={[styles.exploreIcon, { backgroundColor: tint }]}>
         <SymbolView name={symbol} size={19} tintColor="#7C3AED" />
       </View>
@@ -278,9 +279,9 @@ export default function UserDashboardScreen() {
           </View>
 
           <Text style={styles.sectionTitle}>Explore</Text>
-          <ExploreCard title="Agenda" detail={`${sessionCount} sessions across ${sessionDays || '—'} day${sessionDays === 1 ? '' : 's'}`} symbol={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} tint="#F2ECFF" />
-          <ExploreCard title="Attendees" detail={`${attendeeCount} registered professionals`} symbol={{ ios: 'person.2', android: 'group', web: 'group' }} tint="#E8FBF6" />
-          <ExploreCard title="Infographics" detail="Live attendance & interest data" symbol={{ ios: 'chart.bar', android: 'bar_chart', web: 'bar_chart' }} tint="#F5EFFF" />
+          <ExploreCard title="Agenda" detail={`${sessionCount} sessions across ${sessionDays || '—'} day${sessionDays === 1 ? '' : 's'}`} symbol={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} tint="#F2ECFF" onPress={() => router.push('/agenda')} />
+          <ExploreCard title="Attendees" detail={`${attendeeCount} registered professionals`} symbol={{ ios: 'person.2', android: 'group', web: 'group' }} tint="#E8FBF6" onPress={() => router.push('/people')} />
+          <ExploreCard title="Infographics" detail="Live attendance & interest data" symbol={{ ios: 'chart.bar', android: 'bar_chart', web: 'bar_chart' }} tint="#F5EFFF" onPress={() => router.push('/charts')} />
 
           <View style={styles.statsRow}>
             <Stat value={attendeeCount} label="Attendees" symbol={{ ios: 'person.2', android: 'group', web: 'group' }} />

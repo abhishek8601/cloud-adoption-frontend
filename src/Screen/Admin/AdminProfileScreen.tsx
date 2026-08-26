@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import AdminBottomNav from './AdminBottomNav';
@@ -27,6 +27,15 @@ function Row({
 export default function AdminProfileScreen() {
   const router = useRouter();
   const { logout, user } = useAuth();
+  const name = user?.name || '—';
+  const initials = name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || 'A';
+  const role = typeof user?.role === 'string' ? user.role : 'Administrator';
+  const roleLabel = role.replace(/\b\w/g, (letter) => letter.toUpperCase());
 
   const handleSignOut = async () => {
     try {
@@ -72,24 +81,29 @@ export default function AdminProfileScreen() {
           </View>
           <View style={styles.profileCard}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>CA</Text>
+              <Text style={styles.avatarText}>{initials}</Text>
             </View>
             <View>
-              <Text style={styles.name}>Admin User</Text>
-              <Text style={styles.company}>Cloud Adoption Solutions</Text>
-              <Text style={styles.role}>♧ Administrator</Text>
+              <Text style={styles.name}>{name}</Text>
+              <Text style={styles.company}>{user?.company_name || '—'}</Text>
+              <Text style={styles.role}>♧ {roleLabel}</Text>
             </View>
           </View>
           <Text style={styles.section}>Account Details</Text>
           <View style={styles.card}>
-            <Row label="Name" value="Admin User" />
-            <Row label="Phone" value="+1 (415) 555-0100" />
-            <Row label="Email Address" value="admin@cloudadoptionsolutions.com" shaded />
-            <Row label="Access Level" value="Full Administrator Access" shaded />
+            <Row label="Name" value={name} />
+            <Row label="Phone" value={user?.phone || '—'} />
+            <Row label="Email Address" value={user?.email || '—'} shaded />
+            <Row label="Access Level" value={roleLabel} shaded />
           </View>
           <Text style={styles.section}>Security</Text>
           <View style={styles.card}>
-            <Pressable style={styles.security}>
+            <Pressable
+              accessibilityLabel="Change password"
+              accessibilityRole="button"
+              onPress={() => router.push('/admin-change-password')}
+              style={styles.security}
+            >
               <Text style={styles.link}>Change Password</Text>
               <Text>›</Text>
             </Pressable>
@@ -100,7 +114,7 @@ export default function AdminProfileScreen() {
           </View>
           <Text style={styles.section}>App Information</Text>
           <View style={styles.card}>
-            <Row label="Platform" value="iOS" />
+            <Row label="Platform" value={Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : 'Web'} />
           </View>
           <Pressable accessibilityLabel="Sign out" accessibilityRole="button" onPress={handleSignOut} style={styles.signOut}>
             <Text style={styles.signOutText}>Sign Out</Text>

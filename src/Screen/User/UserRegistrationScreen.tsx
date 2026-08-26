@@ -911,7 +911,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 type FieldProps = {
   label: string;
   placeholder: string;
-  value: string;
+  value: string;  
   onChangeText: (value: string) => void;
   keyboardType?: 'default' | 'email-address' | 'phone-pad' | 'url';
   secureTextEntry?: boolean;
@@ -982,6 +982,20 @@ export default function UserRegistrationScreen() {
     remarks: '',
   });
   const update = (key: keyof typeof form) => (value: string) => setForm((current) => ({ ...current, [key]: value }));
+  
+
+  const isFormValid =
+  form.name.trim() !== '' &&
+  form.email.trim() !== '' &&
+  form.password.trim() !== '' &&
+  form.passwordConfirmation.trim() !== '' &&
+  form.phone.trim() !== '' &&
+  form.company.trim() !== '' &&
+  form.designation.trim() !== '' &&
+  form.interest.trim() !== '' &&
+  form.ticketReference.trim() !== '' &&
+  form.city.trim() !== '' &&
+  form.state.trim() !== '';
 
   const handleSubmit = async () => {
     // Validate all required fields
@@ -1178,9 +1192,24 @@ export default function UserRegistrationScreen() {
             </View>
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            <Pressable onPress={handleSubmit} disabled={isSubmitting} style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}>
-              <Text style={styles.submitText}>{isSubmitting ? 'Submitting...' : 'Submit Registration'}</Text>
-            </Pressable>
+            <Pressable
+  onPress={handleSubmit}
+  disabled={!isFormValid || isSubmitting}
+  style={[
+    styles.submitButton,
+    isFormValid && styles.submitButtonActive,
+    (!isFormValid || isSubmitting) && styles.submitButtonDisabled,
+  ]}
+>
+  <Text
+    style={[
+      styles.submitText,
+      !isFormValid && styles.submitTextDisabled,
+    ]}
+  >
+    {isSubmitting ? 'Submitting...' : 'Submit Registration'}
+  </Text>
+</Pressable>
             <Text
               style={styles.terms}>
               By registering you agree to the Conference Code of{`\n`}Conduct.</Text>
@@ -1332,22 +1361,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
   },
-  submitButton: {
-    height: 48,
-    marginTop: 18,
-    borderRadius: 8,
-    backgroundColor: '#C9D5E4',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800'
-  },
+  
   terms: {
     color: '#758198',
     fontSize: 10,
@@ -1355,4 +1369,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10
   },
+
+  submitButton: {
+  height: 48,
+  marginTop: 18,
+  borderRadius: 8,
+  backgroundColor: '#D9E1EC',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+submitButtonActive: {
+  backgroundColor: '#8B5CF6',
+},
+
+submitButtonDisabled: {
+  opacity: 0.65,
+},
+
+submitText: {
+  color: '#FFFFFF',
+  fontSize: 13,
+  fontWeight: '800',
+},
+
+submitTextDisabled: {
+  color: '#8A94A6',
+},
 });
