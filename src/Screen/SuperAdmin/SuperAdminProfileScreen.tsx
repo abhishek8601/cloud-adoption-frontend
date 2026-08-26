@@ -54,29 +54,29 @@ export default function SuperAdminProfileScreen() {
           </View>
 
           <View style={styles.profileCard}>
-            <View style={styles.avatar}><Text style={styles.avatarText}>CA</Text></View>
+            <View style={styles.avatar}><Text style={styles.avatarText}>SA</Text></View>
             <View style={styles.profileCopy}>
-              <Text style={styles.name}>Admin User</Text>
+              <Text style={styles.name}>Super Admin</Text>
               <Text style={styles.company}>Cloud Adoption Solutions</Text>
               <View style={styles.roleBadge}>
                 <SymbolView name={{ ios: 'shield.fill', android: 'shield', web: 'shield' }} size={9} tintColor="#7C3AED" />
-                <Text style={styles.roleText}>Administrator</Text>
+                <Text style={styles.roleText}>Super Administrator</Text>
               </View>
             </View>
           </View>
 
           <Text style={styles.sectionTitle}>ACCOUNT DETAILS</Text>
           <View style={styles.card}>
-            <DetailRow label="Name" value="Admin User" />
+            <DetailRow label="Name" value="Super Admin" />
             <DetailRow label="Phone" value="+1 (415) 555-0100" />
-            <DetailRow label="EMAIL ADDRESS" value="admin@cloudadoptionsolutions.com" emphasized icon={{ ios: 'lock', android: 'lock', web: 'lock' }} />
-            <DetailRow label="ACCESS LEVEL" value="Full Administrator Access" emphasized icon={{ ios: 'shield', android: 'shield', web: 'shield' }} />
+            <DetailRow label="EMAIL ADDRESS" value="superadmin@cloudadoptionsolutions.com" emphasized icon={{ ios: 'lock', android: 'lock', web: 'lock' }} />
+            <DetailRow label="ACCESS LEVEL" value="Full Super Admin Access" emphasized icon={{ ios: 'shield', android: 'shield', web: 'shield' }} />
           </View>
 
           <Text style={styles.sectionTitle}>SECURITY</Text>
           <View style={styles.card}>
             {['Change Password', 'Two-Factor Authentication'].map((label) => (
-              <Pressable key={label} style={styles.securityRow}>
+              <Pressable key={label} onPress={() => label === 'Change Password' && router.push('/superadmin-change-password')} style={styles.securityRow}>
                 <Text style={styles.securityLink}>{label}</Text>
                 <Text style={styles.chevron}>›</Text>
               </Pressable>

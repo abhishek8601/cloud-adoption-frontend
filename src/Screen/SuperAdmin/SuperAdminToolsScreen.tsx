@@ -1,5 +1,6 @@
 import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SuperAdminTabBar from '../../components/SuperAdminTabBar';
@@ -46,6 +47,12 @@ const tabs = [
 ] as const;
 
 export default function SuperAdminToolsScreen() {
+  const router = useRouter();
+  const openManagementOption = (title: string) => {
+    if (title === 'Users List') router.push('/superadmin-users');
+    if (title === 'Admin Users') router.push('/superadmin-admin-users');
+  };
+
   return (
     <View style={styles.screen}>
       <StatusBar style="dark" />
@@ -59,7 +66,7 @@ export default function SuperAdminToolsScreen() {
           <Text style={styles.subtitle}>Super Admin controls</Text>
 
           {managementOptions.map((option) => (
-            <Pressable key={option.title} style={styles.optionCard}>
+            <Pressable key={option.title} onPress={() => openManagementOption(option.title)} style={styles.optionCard}>
               <View style={[styles.iconBox, { backgroundColor: option.background }]}>
                 <SymbolView name={option.icon as never} size={21} tintColor={option.color} />
               </View>
