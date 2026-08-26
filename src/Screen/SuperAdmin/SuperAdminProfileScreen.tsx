@@ -1,9 +1,12 @@
 import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SuperAdminTabBar from '../../components/SuperAdminTabBar';
+import { useAuth } from '../../context/AuthContext';
+import { api } from '../../services/api';
 
 type DetailRowProps = {
   label: string;
@@ -35,6 +38,75 @@ const tabs = [
 
 export default function SuperAdminProfileScreen() {
   const router = useRouter();
+  const { user, logout, updateUser, isLoading } = useAuth();
+  const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
+
+  useEffect(() => {
+    const token = user?.token;
+    if (!token) return;
+
+    const refreshProfile = async () => {
+      setIsRefreshingProfile(true);
+      try {
+        const response = await api.me(token);
+        const profile = (response.data as { user?: Record<string, unknown> } | undefined)?.user
+          ?? (response.data as Record<string, unknown> | undefined);
+
+        if (profile && typeof profile === 'object') {
+          await updateUser(profile);
+        }
+      } catch (error) {
+        // Keep showing the saved authenticated-user data if the profile refresh fails.
+        console.error('Failed to refresh super admin profile:', error);
+      } finally {
+        setIsRefreshingProfile(false);
+      }
+    };
+
+    void refreshProfile();
+  }, [user?.token]);
+
+  const name = user?.name?.trim() || '—';
+  const initials = name === '—'
+    ? 'SA'
+    : name.split(/\s+/).map((part) => part[0]).join('').toUpperCase().slice(0, 2);
+  const rawRole = user?.role as unknown;
+  const role = typeof rawRole === 'string'
+    ? rawRole.trim()
+    : rawRole && typeof rawRole === 'object'
+      ? ((rawRole as { name?: unknown; label?: unknown; title?: unknown }).name
+        ?? (rawRole as { label?: unknown }).label
+        ?? (rawRole as { title?: unknown }).title) as string
+      : 'super admin';
+  const normalizedRole = typeof role === 'string' && role.trim() ? role.trim() : 'super admin';
+  const roleLabel = normalizedRole.replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const accessLevel = normalizedRole.toLowerCase().includes('super')
+    ? 'Full Super Admin Access'
+    : `${roleLabel} Access`;
+  const platform = Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : 'Web';
+
+  const handleSignOut = async () => {
+    try {
+      if (user?.token) await api.logout(user.token);
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+    } finally {
+      await logout();
+      router.dismissAll();
+      router.replace('/');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.screen}>
+        <StatusBar style="dark" />
+        <SafeAreaView style={[styles.safeArea, styles.loadingContainer]}>
+          <ActivityIndicator color="#7C3AED" />
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
@@ -47,30 +119,31 @@ export default function SuperAdminProfileScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Profile</Text>
-            <Pressable style={styles.editButton}>
+            <Pressable accessibilityLabel="Edit profile" accessibilityRole="button" style={styles.editButton}>
               <SymbolView name={{ ios: 'square.and.pencil', android: 'edit', web: 'edit' }} size={11} tintColor="#7C3AED" />
               <Text style={styles.editText}>Edit</Text>
             </Pressable>
           </View>
 
           <View style={styles.profileCard}>
-            <View style={styles.avatar}><Text style={styles.avatarText}>SA</Text></View>
+            <View style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></View>
             <View style={styles.profileCopy}>
-              <Text style={styles.name}>Super Admin</Text>
-              <Text style={styles.company}>Cloud Adoption Solutions</Text>
+              <Text style={styles.name}>{name}</Text>
+              <Text style={styles.company}>{user?.company_name?.trim() || '—'}</Text>
               <View style={styles.roleBadge}>
                 <SymbolView name={{ ios: 'shield.fill', android: 'shield', web: 'shield' }} size={9} tintColor="#7C3AED" />
-                <Text style={styles.roleText}>Super Administrator</Text>
+                <Text style={styles.roleText}>{roleLabel}</Text>
               </View>
             </View>
+            {isRefreshingProfile ? <ActivityIndicator size="small" color="#7C3AED" /> : null}
           </View>
 
           <Text style={styles.sectionTitle}>ACCOUNT DETAILS</Text>
           <View style={styles.card}>
-            <DetailRow label="Name" value="Super Admin" />
-            <DetailRow label="Phone" value="+1 (415) 555-0100" />
-            <DetailRow label="EMAIL ADDRESS" value="superadmin@cloudadoptionsolutions.com" emphasized icon={{ ios: 'lock', android: 'lock', web: 'lock' }} />
-            <DetailRow label="ACCESS LEVEL" value="Full Super Admin Access" emphasized icon={{ ios: 'shield', android: 'shield', web: 'shield' }} />
+            <DetailRow label="Name" value={name} />
+            <DetailRow label="Phone" value={user?.phone?.trim() || '—'} />
+            <DetailRow label="EMAIL ADDRESS" value={user?.email?.trim() || '—'} emphasized icon={{ ios: 'lock', android: 'lock', web: 'lock' }} />
+            <DetailRow label="ACCESS LEVEL" value={accessLevel} emphasized icon={{ ios: 'shield', android: 'shield', web: 'shield' }} />
           </View>
 
           <Text style={styles.sectionTitle}>SECURITY</Text>
@@ -84,9 +157,9 @@ export default function SuperAdminProfileScreen() {
           </View>
 
           <Text style={styles.sectionTitle}>APP INFORMATION</Text>
-          <View style={styles.card}><DetailRow label="Platform" value="iOS" /></View>
+          <View style={styles.card}><DetailRow label="Platform" value={platform} /></View>
 
-          <Pressable accessibilityLabel="Sign out" accessibilityRole="button" onPress={() => { router.dismissAll(); router.replace('/'); }} style={styles.signOutButton}><Text style={styles.signOutText}>Sign Out</Text></Pressable>
+          <Pressable accessibilityLabel="Sign out" accessibilityRole="button" onPress={handleSignOut} style={styles.signOutButton}><Text style={styles.signOutText}>Sign Out</Text></Pressable>
         </ScrollView>
 
         <SuperAdminTabBar activeTab="Profile" />
@@ -98,6 +171,7 @@ export default function SuperAdminProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F7F8FC' },
   safeArea: { flex: 1 },
+  loadingContainer: { alignItems: 'center', justifyContent: 'center' },
   header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' },
   headerTitle: { fontSize: 13, fontWeight: '800', color: '#1D2639' },
   content: { padding: 12, paddingBottom: 20 },

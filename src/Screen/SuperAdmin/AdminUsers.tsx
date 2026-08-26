@@ -36,9 +36,10 @@ export default function AdminUsers() {
       return;
     }
 
-    // Use the configured URL when Expo injects it; otherwise use the API client's base URL.
-    // This keeps the screen working after a build where a newly added .env value is unavailable.
-    const endpoint = process.env.EXPO_PUBLIC_ADMIN_ADMINS_URL || '/admin/admins';
+    // Admin details is the configured source for the Super Admin's Admin Users list.
+    const endpoint = process.env.EXPO_PUBLIC_ADMIN_DETAILS_URL
+      || process.env.EXPO_PUBLIC_ADMIN_ADMINS_URL
+      || '/admin/admins';
 
     setIsLoading(true);
     setError(null);
@@ -57,12 +58,23 @@ export default function AdminUsers() {
 
   const deleteAdmin = async (adminId: string) => {
     if (!user?.token) throw new Error('Please sign in again to delete an admin.');
-    const endpoint = process.env.EXPO_PUBLIC_ADMIN_ADMINS_URL || '/admin/admins';
+    const endpoint = process.env.EXPO_PUBLIC_ADMIN_DETAILS_URL
+      || process.env.EXPO_PUBLIC_ADMIN_ADMINS_URL
+      || '/admin/admins';
     await apiRequest(`${endpoint}/${adminId}`, { method: 'DELETE', token: user.token });
     await loadAdmins();
   };
 
+  const viewAdmin = async (adminId: string): Promise<Record<string, unknown>> => {
+    if (!user?.token) throw new Error('Please sign in again to view admin details.');
+    const endpoint = process.env.EXPO_PUBLIC_ADMIN_DETAILS_URL
+      || process.env.EXPO_PUBLIC_ADMIN_ADMINS_URL
+      || '/admin/admins';
+    const response = await apiRequest<Record<string, unknown>>(`${endpoint}/${adminId}`, { token: user.token });
+    return response.data || {};
+  };
+
   useFocusEffect(useCallback(() => { void loadAdmins(); }, [loadAdmins]));
 
-  return <UserManagementList admin people={admins} isLoading={isLoading} error={error} onDeleteAdmin={deleteAdmin} />;
+  return <UserManagementList admin people={admins} isLoading={isLoading} error={error} onDeleteAdmin={deleteAdmin} onViewAdmin={viewAdmin} />;
 }
