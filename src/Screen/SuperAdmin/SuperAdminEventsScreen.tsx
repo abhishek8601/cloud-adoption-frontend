@@ -1,5 +1,5 @@
-import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -46,9 +46,22 @@ export default function SuperAdminEventsScreen() {
   }, []);
 
   return <View style={styles.screen}><StatusBar style="dark" /><SafeAreaView style={styles.safeArea}>
-    <View style={styles.header}><Text style={styles.headerTitle}>Conferences</Text></View>
+    <View style={styles.header}>
+      <Text 
+      style={styles.headerTitle}>
+        Conferences
+        </Text>
+        </View>
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.titleRow}><Text style={styles.title}>Conferences</Text><Text style={styles.subtitle}>{isLoading ? 'Loading conferences...' : `${conferences.length} conferences`}</Text></View>
+      <View style={styles.titleRow}>
+        <Text 
+        style={styles.title}>
+          Conferences
+          </Text>
+          <Text 
+          style={styles.subtitle}>{isLoading ? 'Loading conferences...' : `${conferences.length} conferences`}
+            </Text>
+            </View>
       {isLoading ? <View style={styles.loader}><ActivityIndicator color="#7C3AED" /></View> : error ? <Text style={styles.error}>{error}</Text> : conferences.length === 0 ? <Text style={styles.empty}>No active or inactive conferences found.</Text> : conferences.map((conference) => <ConferenceCard conference={conference} onView={() => setSelectedConference(conference)} key={conference.id} />)}
     </ScrollView>
     <Modal visible={Boolean(selectedConference)} transparent animationType="fade" onRequestClose={() => setSelectedConference(null)}><View style={styles.modalOverlay}><View style={styles.modal}><Text style={styles.modalTitle}>Conference Details</Text>{selectedConference ? <View style={styles.details}><Text style={styles.detailLabel}>NAME</Text><Text style={styles.detailValue}>{selectedConference.title}</Text><Text style={styles.detailLabel}>STATUS</Text><Text style={styles.detailValue}>{selectedConference.active ? 'Active' : 'Inactive'}</Text><Text style={styles.detailLabel}>DATE</Text><Text style={styles.detailValue}>{selectedConference.date}</Text><Text style={styles.detailLabel}>VENUE</Text><Text style={styles.detailValue}>{selectedConference.location}</Text></View> : null}<Pressable onPress={() => setSelectedConference(null)} style={styles.closeButton}><Text style={styles.closeButtonText}>Close</Text></Pressable></View></View></Modal>

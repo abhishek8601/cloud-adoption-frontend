@@ -1,6 +1,6 @@
-import { SymbolView } from 'expo-symbols';
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -119,10 +119,10 @@ export default function SuperAdminProfileScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Profile</Text>
-            <Pressable accessibilityLabel="Edit profile" accessibilityRole="button" style={styles.editButton}>
+            {/* <Pressable accessibilityLabel="Edit profile" accessibilityRole="button" style={styles.editButton}>
               <SymbolView name={{ ios: 'square.and.pencil', android: 'edit', web: 'edit' }} size={11} tintColor="#7C3AED" />
               <Text style={styles.editText}>Edit</Text>
-            </Pressable>
+            </Pressable> */}
           </View>
 
           <View style={styles.profileCard}>
@@ -148,7 +148,7 @@ export default function SuperAdminProfileScreen() {
 
           <Text style={styles.sectionTitle}>SECURITY</Text>
           <View style={styles.card}>
-            {['Change Password', 'Two-Factor Authentication'].map((label) => (
+            {['Change Password'].map((label) => (
               <Pressable key={label} onPress={() => label === 'Change Password' && router.push('/superadmin-change-password')} style={styles.securityRow}>
                 <Text style={styles.securityLink}>{label}</Text>
                 <Text style={styles.chevron}>›</Text>

@@ -1,3 +1,3 @@
-import UserManagementList from '../Screen/SuperAdmin/UserManagementList';
+import SuperAdminUserManagementScreen from '../Screen/SuperAdmin/SuperAdminUserManagementScreen';
 
-export default UserManagementList;
+export default SuperAdminUserManagementScreen;
