@@ -1111,6 +1111,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -1494,6 +1495,67 @@ export default function AdminEventsScreen() {
     }
   };
 
+  const downloadTicketTemplate = async () => {
+    const endpoint = process.env.EXPO_PUBLIC_ADMIN_TICKET_TEMPLATE_URL || '/admin/tickets/template';
+    const localTemplate = 'ticket_reference,ticket_holder_name,ticket_holder_email,ticket_source\nTICKET-001,Example Attendee,attendee@example.com,Eventbrite\n';
+    if (!user?.token) {
+      notify('Authentication Required', 'Please sign in again to download the template.');
+      return;
+    }
+    try {
+      if (Platform.OS === 'web') {
+        const response = await fetch(endpoint, { headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv', Authorization: `Bearer ${user.token}` } });
+        const isFallback = response.status === 404;
+        const blob = isFallback
+          ? new Blob([localTemplate], { type: 'text/csv;charset=utf-8;' })
+          : response.ok
+            ? await response.blob()
+            : null;
+        if (!blob) throw new Error(`Template download failed (${response.status})`);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = isFallback ? 'ticket-import-template.csv' : 'ticket-import-template.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        notify('Success', 'Ticket template downloaded.');
+        return;
+      }
+
+      const FileSystem = await import('expo-file-system/legacy');
+      const Sharing = await import('expo-sharing');
+      const xlsxUri = `${FileSystem.cacheDirectory}ticket-import-template.xlsx`;
+      const csvUri = `${FileSystem.cacheDirectory}ticket-import-template.csv`;
+      let fileUri = xlsxUri;
+      let mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      let uti = 'org.openxmlformats.spreadsheetml.sheet';
+      try {
+        const result = await FileSystem.downloadAsync(endpoint, xlsxUri, { headers: { Authorization: `Bearer ${user.token}` } });
+        if (result.status >= 400) {
+          fileUri = csvUri;
+          mimeType = 'text/csv';
+          uti = 'public.comma-separated-values-text';
+          await FileSystem.writeAsStringAsync(fileUri, localTemplate, { encoding: 'utf8' });
+        }
+      } catch {
+        // The template endpoint is optional; keep the tool usable with the built-in CSV template.
+        fileUri = csvUri;
+        mimeType = 'text/csv';
+        uti = 'public.comma-separated-values-text';
+        await FileSystem.writeAsStringAsync(fileUri, localTemplate, { encoding: 'utf8' });
+      }
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, { mimeType, dialogTitle: 'Download Ticket Template', UTI: uti });
+      } else {
+        notify('Template Ready', `File saved at:\n${fileUri}`);
+      }
+    } catch (error) {
+      notify('Download Failed', error instanceof Error ? error.message : 'Unable to download ticket template.');
+    }
+  };
+
   const openAgenda = async (conference: ConferenceInfo) => {
     setAgendaConference(conference);
     setAgendaFormVisible(false);
@@ -1583,7 +1645,7 @@ export default function AdminEventsScreen() {
           <Text style={styles.headerTitle}>Conferences</Text>
         </View>
 
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} tintColor="#7C3AED" colors={["#7C3AED"]} />} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.titleRow}>
             <View>
               <Text style={styles.title}>Conferences</Text>
@@ -1592,8 +1654,9 @@ export default function AdminEventsScreen() {
               </Text>
             </View>
             <View style={styles.topActions}>
-              <Pressable accessibilityLabel="Refresh" onPress={load} style={styles.agendaButton}>
-                <Text style={styles.agendaText}>↻ Refresh</Text>
+              <Pressable accessibilityLabel="Download ticket template" onPress={() => void downloadTicketTemplate()} style={styles.templateButton}>
+                <SymbolView name={{ ios: 'arrow.down.doc', android: 'download', web: 'download' }} size={11} tintColor="#7040DF" />
+                <Text style={styles.agendaText}>Download Template</Text>
               </Pressable>
               <Pressable accessibilityLabel="Create new conference" accessibilityRole="button" onPress={openCreate} style={styles.newButton}>
                 <Text style={styles.newText}>＋ New</Text>
@@ -1800,7 +1863,7 @@ const styles = StyleSheet.create({
   },
   title: { color: '#1D2639', fontSize: 23, fontWeight: '800' },
   subtitle: { color: '#718098', fontSize: 10, marginTop: 3 },
-  topActions: { flexDirection: 'row', gap: 7 },
+  topActions: { flexDirection: 'row', gap: 7 }, templateButton: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 8, backgroundColor: '#F0E9FF' },
   agendaButton: {
     borderRadius: 8,
     paddingHorizontal: 10,

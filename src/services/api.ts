@@ -396,6 +396,8 @@ export type ConferenceInfo = {
   title: string;
   slug?: string;
   conference_date?: string;
+  active_start_date?: string;
+  active_end_date?: string;
   venue_name?: string;
   venue_address?: string;
   venue_city?: string;
