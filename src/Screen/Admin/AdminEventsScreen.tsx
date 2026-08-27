@@ -1120,7 +1120,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
-import { adminApi, agendaApi, type AgendaItem, type AgendaPayload, type ConferenceInfo, type ConferencePayload } from '../../services/api';
+import { adminApi, agendaApi, type AgendaItem, type AgendaPayload, type ConferenceInfo, type ConferencePayload, type Ticket } from '../../services/api';
 import AdminBottomNav from './AdminBottomNav';
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -1173,11 +1173,12 @@ type ConferenceCardProps = {
   onDelete: () => void;
   onToggleStatus: () => void;
   onUploadTickets: () => void;
+  onViewTickets: () => void;
   onManageAgenda: () => void;
   uploading: boolean;
 };
 
-function ConferenceCard({ conference, onEdit, onDelete, onToggleStatus, onUploadTickets, onManageAgenda, uploading }: ConferenceCardProps) {
+function ConferenceCard({ conference, onEdit, onDelete, onToggleStatus, onUploadTickets, onViewTickets, onManageAgenda, uploading }: ConferenceCardProps) {
   const active = conference.status === 'active';
   const accentColor = active ? '#00A878' : '#718098';
   const dateLabel = conference.conference_date
@@ -1223,6 +1224,18 @@ function ConferenceCard({ conference, onEdit, onDelete, onToggleStatus, onUpload
                 tintColor="#7C3AED"
               />
             )}
+          </Pressable>
+          <Pressable
+            accessibilityLabel={`View tickets for ${conference.title}`}
+            accessibilityRole="button"
+            onPress={onViewTickets}
+            style={styles.iconAction}
+          >
+            <SymbolView
+              name={{ ios: 'eye', android: 'visibility', web: 'visibility' }}
+              size={14}
+              tintColor="#2563EB"
+            />
           </Pressable>
           <Pressable
             accessibilityLabel={`Edit ${conference.title}`}
@@ -1324,6 +1337,10 @@ export default function AdminEventsScreen() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const [ticketsConference, setTicketsConference] = useState<ConferenceInfo | null>(null);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [ticketsError, setTicketsError] = useState('');
 
   // Agenda management state
   const [agendaConference, setAgendaConference] = useState<ConferenceInfo | null>(null);
@@ -1492,6 +1509,23 @@ export default function AdminEventsScreen() {
       notify('Upload Failed', e instanceof Error ? e.message : 'Could not import tickets.');
     } finally {
       setUploadingId(null);
+    }
+  };
+
+  const openTickets = async (conference: ConferenceInfo) => {
+    setTicketsConference(conference);
+    setTickets([]);
+    setTicketsError('');
+    if (!user?.token) return;
+
+    setTicketsLoading(true);
+    try {
+      const res = await adminApi.tickets(user.token, conference.id);
+      setTickets(res.data || []);
+    } catch (e) {
+      setTicketsError(e instanceof Error ? e.message : 'Failed to load tickets.');
+    } finally {
+      setTicketsLoading(false);
     }
   };
 
@@ -1678,6 +1712,7 @@ export default function AdminEventsScreen() {
               onDelete={() => confirmDelete(conference)}
               onToggleStatus={() => toggleStatus(conference)}
               onUploadTickets={() => uploadTickets(conference)}
+              onViewTickets={() => openTickets(conference)}
               onManageAgenda={() => openAgenda(conference)}
               uploading={uploadingId === conference.id}
             />
@@ -1836,6 +1871,44 @@ export default function AdminEventsScreen() {
           </KeyboardAvoidingView>
         </Modal>
 
+        <Modal
+          transparent
+          visible={ticketsConference !== null}
+          animationType="slide"
+          onRequestClose={() => setTicketsConference(null)}
+        >
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <View>
+                  <Text style={styles.modalTitle} numberOfLines={1}>Tickets · {ticketsConference?.title}</Text>
+                  {!ticketsLoading && !ticketsError ? <Text style={styles.ticketCount}>{tickets.length} ticket{tickets.length === 1 ? '' : 's'}</Text> : null}
+                </View>
+                <Pressable accessibilityLabel="Close tickets" onPress={() => setTicketsConference(null)} hitSlop={10}>
+                  <Text style={styles.modalClose}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {ticketsLoading ? <Text style={styles.stateText}>Loading tickets...</Text> : null}
+                {ticketsError ? <Text style={[styles.stateText, { color: '#D92D3A' }]}>{ticketsError}</Text> : null}
+                {!ticketsLoading && !ticketsError && !tickets.length ? <Text style={styles.stateText}>No tickets have been imported for this conference yet.</Text> : null}
+                {tickets.map((ticket) => (
+                  <View key={ticket.id} style={styles.ticketCard}>
+                    <View style={styles.ticketHeader}>
+                      <Text style={styles.ticketReference}>{ticket.ticket_reference}</Text>
+                      <Text style={[styles.ticketStatus, ticket.status === 'unused' ? styles.ticketUnused : styles.ticketUsed]}>{ticket.status}</Text>
+                    </View>
+                    <Text style={styles.ticketName}>{ticket.ticket_holder_name || 'Unnamed attendee'}</Text>
+                    {ticket.ticket_holder_email ? <Text style={styles.ticketDetail}>{ticket.ticket_holder_email}</Text> : null}
+                    {ticket.ticket_source ? <Text style={styles.ticketDetail}>Source: {ticket.ticket_source}</Text> : null}
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+
         <AdminBottomNav active="events" />
       </SafeAreaView>
     </View>
@@ -1953,6 +2026,15 @@ const styles = StyleSheet.create({
   },
   modalTitle: { color: '#1D2639', fontSize: 16, fontWeight: '800' },
   modalClose: { color: '#64748B', fontSize: 16, fontWeight: '700', padding: 4 },
+  ticketCount: { color: '#718098', fontSize: 11, marginTop: 2 },
+  ticketCard: { borderWidth: 1, borderColor: '#E5E9F0', borderRadius: 10, padding: 12, marginBottom: 9, backgroundColor: '#FBFBFD' },
+  ticketHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  ticketReference: { color: '#202B40', fontSize: 13, fontWeight: '800', flex: 1 },
+  ticketStatus: { overflow: 'hidden', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3, fontSize: 9, fontWeight: '800', textTransform: 'capitalize' },
+  ticketUnused: { color: '#047857', backgroundColor: '#D1FAE5' },
+  ticketUsed: { color: '#64748B', backgroundColor: '#E5E7EB' },
+  ticketName: { color: '#34425D', fontSize: 12, fontWeight: '700', marginTop: 7 },
+  ticketDetail: { color: '#718098', fontSize: 10, marginTop: 3 },
   formField: { marginBottom: 10 },
   formLabel: {
     color: '#6B7280',
