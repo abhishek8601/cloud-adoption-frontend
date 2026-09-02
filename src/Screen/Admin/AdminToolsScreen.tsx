@@ -1,9 +1,9 @@
 import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AdminBottomNav from './AdminBottomNav';
+import { useAuth } from '../../context/AuthContext';
 
 type Tool = {
   title: string;
@@ -20,7 +20,81 @@ const tools: Tool[] = [
 ];
 
 export default function AdminToolsScreen() {
-  const router = useRouter();
+  const { user } = useAuth();
+
+  const exportData = async () => {
+    if (!user?.token) {
+      Alert.alert('Authentication Error', 'Please sign in again.');
+      return;
+    }
+
+    try {
+      const endpoint =
+        process.env.EXPO_PUBLIC_ADMIN_ATTENDEES_EXPORT_URL ||
+        'https://api.lifesciencesdreamin.com/api/admin/reports/attendees/export';
+      const response = await fetch(endpoint, {
+        headers: { Accept: 'text/csv', Authorization: `Bearer ${user.token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Export failed (${response.status})`);
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (response.url.includes('/login') || contentType.includes('text/html')) {
+        throw new Error('Your session has expired. Please sign in again and retry the export.');
+      }
+
+      const csvText = await response.text();
+      if (!csvText) {
+        throw new Error('Export returned empty data.');
+      }
+
+      if (Platform.OS === 'web') {
+        const url = window.URL.createObjectURL(
+          new Blob([csvText], { type: 'text/csv;charset=utf-8;' }),
+        );
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'attendees-report.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Alert.alert('Export Complete', 'Attendee report downloaded.');
+        return;
+      }
+
+      const FileSystem = await import('expo-file-system/legacy');
+      const Sharing = await import('expo-sharing');
+      const fileUri = `${FileSystem.cacheDirectory}attendees-report.csv`;
+      await FileSystem.writeAsStringAsync(fileUri, csvText, { encoding: 'utf8' });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/csv',
+          dialogTitle: 'Export Attendee Report',
+          UTI: 'public.comma-separated-values-text',
+        });
+      } else {
+        Alert.alert('Export Complete', `File saved at:\n${fileUri}`);
+      }
+    } catch (error) {
+      Alert.alert(
+        'Export Failed',
+        error instanceof Error ? error.message : 'Unable to export attendee data.',
+      );
+    }
+  };
+
+  const handleToolPress = (tool: Tool) => {
+    if (tool.title === 'Export Data') {
+      void exportData();
+      return;
+    }
+    Alert.alert(tool.title, 'This tool will be available soon.');
+  };
+
   return (
     <View style={styles.screen}>
       <StatusBar style="dark" />
@@ -32,7 +106,13 @@ export default function AdminToolsScreen() {
           <Text style={styles.title}>Tools</Text>
           <Text style={styles.subtitle}>Admin tools & configuration</Text>
           {tools.map((tool) => (
-            <Pressable key={tool.title} style={styles.toolCard}>
+            <Pressable
+              key={tool.title}
+              accessibilityRole="button"
+              accessibilityLabel={tool.title}
+              onPress={() => handleToolPress(tool)}
+              style={styles.toolCard}
+            >
               <View style={[styles.iconBox, { backgroundColor: tool.background }]}>
                 <SymbolView
                   name={tool.icon as never}

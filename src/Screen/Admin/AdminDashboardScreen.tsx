@@ -218,7 +218,12 @@ export default function AdminDashboardScreen() {
     <Text style={styles.actionText}>Notifications</Text>
   </Pressable>
 
-  <Pressable style={[styles.actionCard, styles.exportCard]}>
+  <Pressable
+    accessibilityLabel="Export attendee data"
+    accessibilityRole="button"
+    onPress={() => router.push('/admin-tools')}
+    style={[styles.actionCard, styles.exportCard]}
+  >
     <View style={[styles.actionIcon, styles.exportIcon]}>
       <SymbolView
         name={{
