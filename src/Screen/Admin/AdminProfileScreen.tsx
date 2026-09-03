@@ -107,10 +107,10 @@ export default function AdminProfileScreen() {
               <Text style={styles.link}>Change Password</Text>
               <Text>›</Text>
             </Pressable>
-            <Pressable style={styles.security}>
+            {/* <Pressable style={styles.security}>
               <Text style={styles.link}>Two-Factor Authentication</Text>
               <Text>›</Text>
-            </Pressable>
+            </Pressable> */}
           </View>
           <Text style={styles.section}>App Information</Text>
           <View style={styles.card}>
