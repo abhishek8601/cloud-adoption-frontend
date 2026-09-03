@@ -428,66 +428,157 @@ export default function AdminEventsScreen() {
     }
   };
 
+  // const downloadTicketTemplate = async () => {
+  //   const endpoint = process.env.EXPO_PUBLIC_ADMIN_TICKET_TEMPLATE_URL || '/admin/tickets/template';
+  //   const localTemplate = 'ticket_reference,ticket_holder_name,ticket_holder_email,ticket_source\nTICKET-001,Example Attendee,attendee@example.com,Eventbrite\n';
+  //   if (!user?.token) {
+  //     notify('Authentication Required', 'Please sign in again to download the template.');
+  //     return;
+  //   }
+  //   try {
+  //     if (Platform.OS === 'web') {
+  //       const response = await fetch(endpoint, { headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv', Authorization: `Bearer ${user.token}` } });
+  //       const isFallback = response.status === 404;
+  //       const blob = isFallback
+  //         ? new Blob([localTemplate], { type: 'text/csv;charset=utf-8;' })
+  //         : response.ok
+  //           ? await response.blob()
+  //           : null;
+  //       if (!blob) throw new Error(`Template download failed (${response.status})`);
+  //       const url = window.URL.createObjectURL(blob);
+  //       const link = document.createElement('a');
+  //       link.href = url;
+  //       link.download = isFallback ? 'ticket-import-template.csv' : 'ticket-import-template.xlsx';
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+  //       window.URL.revokeObjectURL(url);
+  //       notify('Success', 'Ticket template downloaded.');
+  //       return;
+  //     }
+
+  //     const FileSystem = await import('expo-file-system/legacy');
+  //     const Sharing = await import('expo-sharing');
+  //     const xlsxUri = `${FileSystem.cacheDirectory}ticket-import-template.xlsx`;
+  //     const csvUri = `${FileSystem.cacheDirectory}ticket-import-template.csv`;
+  //     let fileUri = xlsxUri;
+  //     let mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  //     let uti = 'org.openxmlformats.spreadsheetml.sheet';
+  //     try {
+  //       const result = await FileSystem.downloadAsync(endpoint, xlsxUri, { headers: { Authorization: `Bearer ${user.token}` } });
+  //       if (result.status >= 400) {
+  //         fileUri = csvUri;
+  //         mimeType = 'text/csv';
+  //         uti = 'public.comma-separated-values-text';
+  //         await FileSystem.writeAsStringAsync(fileUri, localTemplate, { encoding: 'utf8' });
+  //       }
+  //     } catch {
+  //       // The template endpoint is optional; keep the tool usable with the built-in CSV template.
+  //       fileUri = csvUri;
+  //       mimeType = 'text/csv';
+  //       uti = 'public.comma-separated-values-text';
+  //       await FileSystem.writeAsStringAsync(fileUri, localTemplate, { encoding: 'utf8' });
+  //     }
+  //     if (await Sharing.isAvailableAsync()) {
+  //       await Sharing.shareAsync(fileUri, { mimeType, dialogTitle: 'Download Ticket Template', UTI: uti });
+  //     } else {
+  //       notify('Template Ready', `File saved at:\n${fileUri}`);
+  //     }
+  //   } catch (error) {
+  //     notify('Download Failed', error instanceof Error ? error.message : 'Unable to download ticket template.');
+  //   }
+  // };
+
+
+
   const downloadTicketTemplate = async () => {
-    const endpoint = process.env.EXPO_PUBLIC_ADMIN_TICKET_TEMPLATE_URL || '/admin/tickets/template';
-    const localTemplate = 'ticket_reference,ticket_holder_name,ticket_holder_email,ticket_source\nTICKET-001,Example Attendee,attendee@example.com,Eventbrite\n';
+    const endpoint =
+      process.env.EXPO_PUBLIC_ADMIN_TICKET_TEMPLATE_URL ||
+      'https://api.lifesciencesdreamin.com/api/admin/tickets/template';
+
     if (!user?.token) {
-      notify('Authentication Required', 'Please sign in again to download the template.');
+      notify(
+        'Authentication Required',
+        'Please sign in again to download the template.',
+      );
       return;
     }
+
     try {
       if (Platform.OS === 'web') {
-        const response = await fetch(endpoint, { headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv', Authorization: `Bearer ${user.token}` } });
-        const isFallback = response.status === 404;
-        const blob = isFallback
-          ? new Blob([localTemplate], { type: 'text/csv;charset=utf-8;' })
-          : response.ok
-            ? await response.blob()
-            : null;
-        if (!blob) throw new Error(`Template download failed (${response.status})`);
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            Accept:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            Authorization: `Bearer ${user.token} `,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Template download failed(${response.status})`);
+        }
+
+        const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
+
         link.href = url;
-        link.download = isFallback ? 'ticket-import-template.csv' : 'ticket-import-template.xlsx';
+        link.download = 'ticket-import-template.xlsx';
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
+
         notify('Success', 'Ticket template downloaded.');
         return;
       }
 
-      const FileSystem = await import('expo-file-system/legacy');
+      const { File, Paths } = await import('expo-file-system');
       const Sharing = await import('expo-sharing');
-      const xlsxUri = `${FileSystem.cacheDirectory}ticket-import-template.xlsx`;
-      const csvUri = `${FileSystem.cacheDirectory}ticket-import-template.csv`;
-      let fileUri = xlsxUri;
-      let mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      let uti = 'org.openxmlformats.spreadsheetml.sheet';
-      try {
-        const result = await FileSystem.downloadAsync(endpoint, xlsxUri, { headers: { Authorization: `Bearer ${user.token}` } });
-        if (result.status >= 400) {
-          fileUri = csvUri;
-          mimeType = 'text/csv';
-          uti = 'public.comma-separated-values-text';
-          await FileSystem.writeAsStringAsync(fileUri, localTemplate, { encoding: 'utf8' });
-        }
-      } catch {
-        // The template endpoint is optional; keep the tool usable with the built-in CSV template.
-        fileUri = csvUri;
-        mimeType = 'text/csv';
-        uti = 'public.comma-separated-values-text';
-        await FileSystem.writeAsStringAsync(fileUri, localTemplate, { encoding: 'utf8' });
+
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          Accept:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          Authorization: `Bearer ${user.token} `,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Template download failed(${response.status})`);
       }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+
+      const file = new File(Paths.cache, 'ticket-import-template.xlsx');
+
+      file.write(bytes);
+
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, { mimeType, dialogTitle: 'Download Ticket Template', UTI: uti });
+        await Sharing.shareAsync(file.uri, {
+          mimeType:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          dialogTitle: 'Download Ticket Template',
+          UTI: 'org.openxmlformats.spreadsheetml.sheet',
+        });
       } else {
-        notify('Template Ready', `File saved at:\n${fileUri}`);
+        notify('Template Ready', `File saved at: \n${file.uri} `);
       }
     } catch (error) {
-      notify('Download Failed', error instanceof Error ? error.message : 'Unable to download ticket template.');
+      notify(
+        'Download Failed',
+        error instanceof Error
+          ? error.message
+          : 'Unable to download ticket template.',
+      );
     }
   };
+
+
 
   const openAgenda = async (conference: ConferenceInfo) => {
     setAgendaConference(conference);
