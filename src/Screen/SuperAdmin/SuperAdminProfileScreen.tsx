@@ -113,7 +113,11 @@ export default function SuperAdminProfileScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
+          <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.replace('/superadmin-dashboard')} hitSlop={10} style={styles.backButton}>
+            <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={19} tintColor="#253046" />
+          </Pressable>
           <Text style={styles.headerTitle}>My Profile</Text>
+          <View style={styles.headerSpacer} />
         </View>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -172,8 +176,10 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F7F8FC' },
   safeArea: { flex: 1 },
   loadingContainer: { alignItems: 'center', justifyContent: 'center' },
-  header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' },
+  header: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' },
   headerTitle: { fontSize: 13, fontWeight: '800', color: '#1D2639' },
+  backButton: { width: 44, alignItems: 'center', justifyContent: 'center' },
+  headerSpacer: { width: 44 },
   content: { padding: 12, paddingBottom: 20 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 23, fontWeight: '800', color: '#1D2639' },

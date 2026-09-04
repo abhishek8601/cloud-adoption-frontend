@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { registrationApi, type RegistrationEntry } from '../../services/api';
@@ -180,9 +180,22 @@ export default function AdminPeopleScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
+          <Pressable
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
+            onPress={() => router.replace('/admin-dashboard')}
+            hitSlop={10}
+            style={styles.backButton}
+          >
+            <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={19} tintColor="#253046" />
+          </Pressable>
           <Text style={styles.headerTitle}>Watchlist</Text>
+          <View style={styles.headerSpacer} />
         </View>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} tintColor="#7C3AED" colors={["#7C3AED"]} />}
+        >
           <View style={styles.titleRow}>
             <View>
               <Text style={styles.title}>Watchlist</Text>
@@ -190,14 +203,6 @@ export default function AdminPeopleScreen() {
                 {entries.length} total entr{entries.length === 1 ? 'y' : 'ies'}
               </Text>
             </View>
-            <Pressable accessibilityLabel="Refresh" accessibilityRole="button" onPress={load} style={styles.allPeople}>
-              <SymbolView
-                name={{ ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' }}
-                size={14}
-                tintColor="#7C3AED"
-              />
-              <Text style={styles.allPeopleText}>Refresh</Text>
-            </Pressable>
           </View>
           <View style={styles.filterRow}>
             {(['pending', 'approved', 'rejected'] as ReviewStatus[]).map((filter) => (
@@ -249,14 +254,14 @@ export default function AdminPeopleScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F7F8FC' },
   safeArea: { flex: 1 },
-  header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' },
+  header: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' },
   headerTitle: { fontSize: 13, fontWeight: '800', color: '#1D2639' },
+  backButton: { width: 44, alignItems: 'center', justifyContent: 'center' },
+  headerSpacer: { width: 44 },
   content: { padding: 12, paddingBottom: 72 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 23, fontWeight: '800', color: '#1D2639' },
   subtitle: { fontSize: 10, color: '#718098', marginTop: 3 },
-  allPeople: { flexDirection: 'row', gap: 5, alignItems: 'center', backgroundColor: '#F0E9FF', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 16 },
-  allPeopleText: { fontSize: 10, fontWeight: '700', color: '#7C3AED' },
   filterRow: { height: 31, marginTop: 10, marginBottom: 10, padding: 3, borderRadius: 8, backgroundColor: '#E9EDF3', flexDirection: 'row', justifyContent: 'space-between' },
   filterButton: { flex: 1, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
   activeFilter: { backgroundColor: '#FFF' },

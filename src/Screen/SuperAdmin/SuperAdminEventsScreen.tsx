@@ -1,7 +1,19 @@
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 import { apiRequest } from '../../services/api';
@@ -15,23 +27,37 @@ function toConference(event: ConferenceResponse): Conference {
   return { id: event.id, title: event.title || 'Untitled conference', date: date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : event.conference_date || 'Date not available', location, active: event.status?.toLowerCase() === 'active' };
 }
 
-function ConferenceCard({ conference, onView }: { conference: Conference; onView: () => void }) {
+function ConferenceCard({ conference, onView, onTitleChange }: { conference: Conference; onView: () => void; onTitleChange: (title: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(conference.title);
   const statusColor = conference.active ? '#00A878' : '#718098';
+  useEffect(() => {
+    if (!editing) setTitle(conference.title);
+  }, [conference.title, editing]);
+  const saveTitle = () => {
+    const nextTitle = title.trim();
+    if (!nextTitle) return;
+    onTitleChange(nextTitle);
+    setEditing(false);
+  };
   return <View style={[styles.card, { borderTopColor: statusColor }]}>
-    <View style={styles.cardHeader}><Text style={[styles.status, { backgroundColor: statusColor }]}>{conference.active ? 'Active' : 'Inactive'}</Text><View style={styles.cardActions}><Pressable accessibilityLabel={`View ${title} details`} onPress={onView} style={styles.viewButton}><SymbolView name={{ ios: 'eye', android: 'visibility', web: 'visibility' }} size={13} tintColor="#2563EB" /></Pressable><Pressable accessibilityLabel={`Edit ${title}`} onPress={() => setEditing((value) => !value)} style={styles.editButton}><SymbolView name={{ ios: 'square.and.pencil', android: 'edit', web: 'edit' }} size={14} tintColor="#7C3AED" /></Pressable></View></View>
-    {editing ? <TextInput accessibilityLabel="Conference title" autoFocus value={title} onChangeText={setTitle} style={styles.titleInput} /> : <Text style={styles.cardTitle}>{title}</Text>}
+    <View style={styles.cardHeader}><Text style={[styles.status, { backgroundColor: statusColor }]}>{conference.active ? 'Active' : 'Inactive'}</Text><View style={styles.cardActions}><Pressable accessibilityRole="button" accessibilityLabel={`View ${title} details`} onPress={onView} hitSlop={8} style={styles.viewButton}><SymbolView name={{ ios: 'eye', android: 'visibility', web: 'visibility' }} size={13} tintColor="#2563EB" /></Pressable>{editing ? <><Pressable accessibilityRole="button" accessibilityLabel={`Save ${title}`} onPress={saveTitle} hitSlop={8} style={styles.editButton}><SymbolView name={{ ios: 'checkmark', android: 'check', web: 'check' }} size={14} tintColor="#00A878" /></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Cancel editing" onPress={() => { setTitle(conference.title); setEditing(false); }} hitSlop={8} style={styles.cancelButton}><SymbolView name={{ ios: 'xmark', android: 'close', web: 'close' }} size={14} tintColor="#65758C" /></Pressable></> : <Pressable accessibilityRole="button" accessibilityLabel={`Edit ${title}`} onPress={() => setEditing(true)} hitSlop={8} style={styles.editButton}><SymbolView name={{ ios: 'square.and.pencil', android: 'edit', web: 'edit' }} size={14} tintColor="#7C3AED" /></Pressable>}</View></View>
+    {editing ? <TextInput accessibilityLabel="Conference title" autoFocus value={title} onChangeText={setTitle} onSubmitEditing={saveTitle} returnKeyType="done" style={styles.titleInput} /> : <Text style={styles.cardTitle}>{title}</Text>}
     <View style={styles.detailRow}><SymbolView name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} size={11} tintColor="#65758C" /><Text style={styles.detailText}>{conference.date}</Text></View>
     <View style={styles.detailRow}><SymbolView name={{ ios: 'mappin.and.ellipse', android: 'location_on', web: 'location_on' }} size={11} tintColor="#65758C" /><Text style={styles.detailText}>{conference.location}</Text></View>
   </View>;
 }
 
 export default function SuperAdminEventsScreen() {
+  const router = useRouter();
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedConference, setSelectedConference] = useState<Conference | null>(null);
+  const updateConferenceTitle = (id: number, title: string) => {
+    setConferences((current) => current.map((conference) => conference.id === id ? { ...conference, title } : conference));
+    setSelectedConference((current) => current?.id === id ? { ...current, title } : current);
+  };
   useEffect(() => {
     const loadConferences = async () => {
       setIsLoading(true); setError(null);
@@ -47,12 +73,24 @@ export default function SuperAdminEventsScreen() {
 
   return <View style={styles.screen}><StatusBar style="dark" /><SafeAreaView style={styles.safeArea}>
     <View style={styles.header}>
+      <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.replace('/superadmin-dashboard')} hitSlop={10} style={styles.backButton}><SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={19} tintColor="#253046" /></Pressable>
       <Text 
       style={styles.headerTitle}>
         Conferences
         </Text>
+      <View style={styles.headerSpacer} />
         </View>
-    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <KeyboardAvoidingView
+  style={styles.flex}
+  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+>
+  <ScrollView
+    contentContainerStyle={styles.content}
+    showsVerticalScrollIndicator={false}
+    keyboardShouldPersistTaps="handled"
+    keyboardDismissMode="on-drag"
+  >
       <View style={styles.titleRow}>
         <Text 
         style={styles.title}>
@@ -62,18 +100,37 @@ export default function SuperAdminEventsScreen() {
           style={styles.subtitle}>{isLoading ? 'Loading conferences...' : `${conferences.length} conferences`}
             </Text>
             </View>
-      {isLoading ? <View style={styles.loader}><ActivityIndicator color="#7C3AED" /></View> : error ? <Text style={styles.error}>{error}</Text> : conferences.length === 0 ? <Text style={styles.empty}>No active or inactive conferences found.</Text> : conferences.map((conference) => <ConferenceCard conference={conference} onView={() => setSelectedConference(conference)} key={conference.id} />)}
+      {isLoading ? (<View style={styles.loader}><ActivityIndicator color="#7C3AED" /></View>) : error ? (
+      <Text 
+      style={styles.error}>{error}</Text> ) : conferences.length === 0 ? 
+      <Text style={styles.empty}>
+          No active or inactive conferences found.</Text> : conferences.map((conference) => <
+            ConferenceCard conference={conference} 
+      onView={() => setSelectedConference(conference)}
+      onTitleChange={(title) => updateConferenceTitle(conference.id, title)}
+      key={conference.id}
+       />
+      
+      )}
     </ScrollView>
+    </KeyboardAvoidingView>
     <Modal visible={Boolean(selectedConference)} transparent animationType="fade" onRequestClose={() => setSelectedConference(null)}><View style={styles.modalOverlay}><View style={styles.modal}><Text style={styles.modalTitle}>Conference Details</Text>{selectedConference ? <View style={styles.details}><Text style={styles.detailLabel}>NAME</Text><Text style={styles.detailValue}>{selectedConference.title}</Text><Text style={styles.detailLabel}>STATUS</Text><Text style={styles.detailValue}>{selectedConference.active ? 'Active' : 'Inactive'}</Text><Text style={styles.detailLabel}>DATE</Text><Text style={styles.detailValue}>{selectedConference.date}</Text><Text style={styles.detailLabel}>VENUE</Text><Text style={styles.detailValue}>{selectedConference.location}</Text></View> : null}<Pressable onPress={() => setSelectedConference(null)} style={styles.closeButton}><Text style={styles.closeButtonText}>Close</Text></Pressable></View></View></Modal>
     <SuperAdminTabBar activeTab="Events" />
   </SafeAreaView></View>;
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F7F8FC' }, safeArea: { flex: 1 },
-  header: { height: 52, alignItems: 'center', justifyContent: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF', backgroundColor: '#FFF' }, headerTitle: { color: '#1E273B', fontSize: 13, fontWeight: '800' },
-  content: { flexGrow: 1, padding: 12, paddingBottom: 20 }, titleRow: { marginBottom: 10 }, title: { color: '#1D2639', fontSize: 23, fontWeight: '800' }, subtitle: { marginTop: 3, color: '#718098', fontSize: 10 },
-  card: { marginBottom: 11, borderTopWidth: 4, borderRadius: 12, padding: 11, backgroundColor: '#FFF', shadowColor: '#34425D', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 }, cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, status: { overflow: 'hidden', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, color: '#FFF', fontSize: 8, fontWeight: '800' }, cardActions: { flexDirection: 'row', gap: 6 }, viewButton: { width: 25, height: 25, alignItems: 'center', justifyContent: 'center', borderRadius: 7, backgroundColor: '#EAF2FF' }, editButton: { width: 25, height: 25, alignItems: 'center', justifyContent: 'center', borderRadius: 7, backgroundColor: '#F0E9FF' }, cardTitle: { marginTop: 8, color: '#202B40', fontSize: 11, fontWeight: '800' }, titleInput: { height: 31, marginTop: 7, paddingHorizontal: 8, borderWidth: 1, borderRadius: 6, borderColor: '#7C3AED', color: '#202B40', fontSize: 11, fontWeight: '800' }, detailRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 7 }, detailText: { flex: 1, color: '#65758C', fontSize: 9 },
+  screen: { 
+    flex: 1, 
+    backgroundColor: '#F7F8FC'
+    
+   }, safeArea: { flex: 1 },
+    flex: {
+    flex: 1,
+  },
+  header: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF', backgroundColor: '#FFF' }, headerTitle: { color: '#1E273B', fontSize: 13, fontWeight: '800' }, backButton: { width: 44, alignItems: 'center', justifyContent: 'center' }, headerSpacer: { width: 44 },
+  content: { flexGrow: 1, padding: 12, paddingBottom: 150 }, titleRow: { marginBottom: 10 }, title: { color: '#1D2639', fontSize: 23, fontWeight: '800' }, subtitle: { marginTop: 3, color: '#718098', fontSize: 10 },
+  card: { marginBottom: 11, borderTopWidth: 4, borderRadius: 12, padding: 11, backgroundColor: '#FFF', shadowColor: '#34425D', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 }, cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, status: { overflow: 'hidden', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, color: '#FFF', fontSize: 8, fontWeight: '800' }, cardActions: { flexDirection: 'row', gap: 6 }, viewButton: { width: 25, height: 25, alignItems: 'center', justifyContent: 'center', borderRadius: 7, backgroundColor: '#EAF2FF' }, editButton: { width: 25, height: 25, alignItems: 'center', justifyContent: 'center', borderRadius: 7, backgroundColor: '#F0E9FF' }, cancelButton: { width: 25, height: 25, alignItems: 'center', justifyContent: 'center', borderRadius: 7, backgroundColor: '#F1F3F6' }, cardTitle: { marginTop: 8, color: '#202B40', fontSize: 11, fontWeight: '800' }, titleInput: { height: 38, minHeight: 38, marginTop: 7, paddingHorizontal: 10, paddingVertical: 0, borderWidth: 1, borderRadius: 6, borderColor: '#7C3AED', color: '#202B40', fontSize: 11, fontWeight: '800', textAlignVertical: 'center' }, detailRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 7 }, detailText: { flex: 1, color: '#65758C', fontSize: 9 },
   loader: { flex: 1, minHeight: 180, alignItems: 'center', justifyContent: 'center' }, error: { marginTop: 12, color: '#C62828', fontSize: 11 }, empty: { paddingVertical: 28, color: '#65758C', fontSize: 11, textAlign: 'center' },
   modalOverlay: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 22, backgroundColor: 'rgba(0,0,0,.48)' }, modal: { width: '100%', maxWidth: 330, padding: 16, borderRadius: 12, backgroundColor: '#FFF' }, modalTitle: { color: '#1D2639', fontSize: 14, fontWeight: '800' }, details: { marginTop: 12 }, detailLabel: { marginTop: 10, color: '#65758C', fontSize: 8, fontWeight: '800' }, detailValue: { marginTop: 3, color: '#253046', fontSize: 11 }, closeButton: { height: 34, marginTop: 18, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7C3AED' }, closeButtonText: { color: '#FFF', fontSize: 10, fontWeight: '800' },
 });

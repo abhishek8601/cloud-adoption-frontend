@@ -666,7 +666,17 @@ export default function AdminEventsScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
+          <Pressable
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
+            onPress={() => router.replace('/admin-dashboard')}
+            hitSlop={10}
+            style={styles.backButton}
+          >
+            <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={19} tintColor="#253046" />
+          </Pressable>
           <Text style={styles.headerTitle}>Conferences</Text>
+          <View style={styles.headerSpacer} />
         </View>
 
         <ScrollView refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} tintColor="#7C3AED" colors={["#7C3AED"]} />} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -910,13 +920,16 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   header: {
     height: 52,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E4E8EF',
   },
   headerTitle: { color: '#1E273B', fontSize: 13, fontWeight: '800' },
+  backButton: { width: 44, alignItems: 'center', justifyContent: 'center' },
+  headerSpacer: { width: 44 },
   content: { padding: 12, paddingBottom: 24 },
   titleRow: {
     flexDirection: 'row',

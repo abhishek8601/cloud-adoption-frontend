@@ -210,8 +210,8 @@ export default function AdminEditScreen() {
       return;
     }
 
-    if (!form.name || !form.email) {
-      setError('Name and email are required.');
+    if (!form.name) {
+      setError('Name is required.');
       return;
     }
 
@@ -236,7 +236,6 @@ export default function AdminEditScreen() {
        */
       const body: Partial<AdminForm> = {
         name: form.name,
-        email: form.email,
         phone: form.phone,
         company_name: form.company_name,
         designation: form.designation,
@@ -345,6 +344,8 @@ export default function AdminEditScreen() {
                     onChangeText={(value) =>
                       update(field.key, value)
                     }
+                    editable={field.key !== 'email'}
+                    selectTextOnFocus={field.key !== 'email'}
                     autoCapitalize={
                       field.key === 'email' ||
                       field.key === 'linkedin_url'
@@ -356,7 +357,10 @@ export default function AdminEditScreen() {
                     }
                     placeholder={field.label}
                     placeholderTextColor="#96A0B0"
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      field.key === 'email' && styles.readOnlyInput,
+                    ]}
                   />
                 </View>
               ))}
@@ -519,6 +523,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     color: '#253046',
     fontSize: 13,
+  },
+  readOnlyInput: {
+    backgroundColor: '#EEF1F5',
+    color: '#65758C',
   },
 
   submit: {

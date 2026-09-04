@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
@@ -70,7 +71,11 @@ export default function AdminProfileScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
+          <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.replace('/admin-dashboard')} hitSlop={10} style={styles.backButton}>
+            <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={19} tintColor="#253046" />
+          </Pressable>
           <Text style={styles.headerTitle}>My Profile</Text>
+          <View style={styles.headerSpacer} />
         </View>
         <View style={styles.content}>
           <View style={styles.titleRow}>
@@ -129,8 +134,10 @@ export default function AdminProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F7F8FC' },
   safeArea: { flex: 1 },
-  header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF' },
+  header: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFF' },
   headerTitle: { fontSize: 13, fontWeight: '800' },
+  backButton: { width: 44, alignItems: 'center', justifyContent: 'center' },
+  headerSpacer: { width: 44 },
   content: { flex: 1, padding: 12 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 23, fontWeight: '800' },

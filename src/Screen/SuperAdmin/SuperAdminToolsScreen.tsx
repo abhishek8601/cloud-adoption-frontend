@@ -1,17 +1,19 @@
-import { SymbolView } from 'expo-symbols';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 import { useAuth } from '../../context/AuthContext';
 
 const tools = [
-  { title: 'Configure Fields', detail: 'Manage sign-up form fields and interests', icon: { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }, color: '#7C3AED', background: '#F2ECFF' },
+  // { title: 'Configure Fields', detail: 'Manage sign-up form fields and interests', icon: { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }, color: '#7C3AED', background: '#F2ECFF' },
   { title: 'Send Notifications', detail: 'Broadcast messages to attendees', icon: { ios: 'bell', android: 'notifications', web: 'notifications' }, color: '#7C3AED', background: '#F5F0FF' },
   { title: 'Export Data', detail: 'Download attendee records as CSV', icon: { ios: 'square.and.arrow.down', android: 'download', web: 'download' }, color: '#00A878', background: '#E8FBF5' },
 ] as const;
 
 export default function SuperAdminToolsScreen() {
+  const router = useRouter();
   const { user } = useAuth();
 
   const exportData = async () => {
@@ -46,7 +48,7 @@ export default function SuperAdminToolsScreen() {
   };
 
   return <View style={styles.screen}><StatusBar style="dark" /><SafeAreaView style={styles.safeArea}>
-    <View style={styles.header}><Text style={styles.headerTitle}>Tools</Text></View>
+    <View style={styles.header}><Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.replace('/superadmin-dashboard')} hitSlop={10} style={styles.backButton}><SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={19} tintColor="#253046" /></Pressable><Text style={styles.headerTitle}>Tools</Text><View style={styles.headerSpacer} /></View>
     <View style={styles.content}><Text style={styles.title}>Tools</Text><Text style={styles.subtitle}>Admin tools & configuration</Text>
       {tools.map((tool) => <Pressable key={tool.title} accessibilityRole="button" accessibilityLabel={tool.title} onPress={() => pressTool(tool.title)} style={styles.card}><View style={[styles.iconBox, { backgroundColor: tool.background }]}><SymbolView name={tool.icon} size={19} tintColor={tool.color} /></View><View style={styles.copy}><Text style={styles.cardTitle}>{tool.title}</Text><Text style={styles.detail}>{tool.detail}</Text></View><Text style={styles.chevron}>›</Text></Pressable>)}
     </View>
@@ -55,5 +57,5 @@ export default function SuperAdminToolsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F7F8FC' }, safeArea: { flex: 1 }, header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' }, headerTitle: { fontSize: 13, fontWeight: '800', color: '#1D2639' }, content: { flex: 1, padding: 12 }, title: { fontSize: 24, fontWeight: '800', color: '#1D2639' }, subtitle: { marginTop: 3, marginBottom: 10, fontSize: 10, color: '#718098' }, card: { minHeight: 62, marginBottom: 9, padding: 10, borderRadius: 12, alignItems: 'center', flexDirection: 'row', backgroundColor: '#FFF', shadowColor: '#34425D', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 }, iconBox: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }, copy: { flex: 1, marginLeft: 11 }, cardTitle: { fontSize: 10, fontWeight: '800', color: '#253046' }, detail: { marginTop: 3, fontSize: 8, color: '#65758C' }, chevron: { fontSize: 20, color: '#B2BDCE' },
+  screen: { flex: 1, backgroundColor: '#F7F8FC' }, safeArea: { flex: 1 }, header: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' }, headerTitle: { fontSize: 13, fontWeight: '800', color: '#1D2639' }, backButton: { width: 44, alignItems: 'center', justifyContent: 'center' }, headerSpacer: { width: 44 }, content: { flex: 1, padding: 12 }, title: { fontSize: 24, fontWeight: '800', color: '#1D2639' }, subtitle: { marginTop: 3, marginBottom: 10, fontSize: 10, color: '#718098' }, card: { minHeight: 62, marginBottom: 9, padding: 10, borderRadius: 12, alignItems: 'center', flexDirection: 'row', backgroundColor: '#FFF', shadowColor: '#34425D', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 }, iconBox: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }, copy: { flex: 1, marginLeft: 11 }, cardTitle: { fontSize: 10, fontWeight: '800', color: '#253046' }, detail: { marginTop: 3, fontSize: 8, color: '#65758C' }, chevron: { fontSize: 20, color: '#B2BDCE' },
 });

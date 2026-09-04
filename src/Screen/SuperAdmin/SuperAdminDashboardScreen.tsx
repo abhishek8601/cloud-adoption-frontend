@@ -10,18 +10,17 @@ import { adminApi, apiRequest, type RegistrationEntry } from '../../services/api
 
 type Metric = { label: string; detail: string; value: string; icon: 'calendar' | 'clock' | 'person.2'; color: string; route: string };
 const actionItems = [
-  { label: 'Create Conference', icon: { ios: 'plus', android: 'add', web: 'add' }, route: '/superadmin-events' },
-  { label: 'Watchlist', icon: { ios: 'clock', android: 'schedule', web: 'schedule' }, route: '/superadmin-people' },
-  { label: 'Notifications', icon: { ios: 'bell', android: 'notifications', web: 'notifications' }, route: '/superadmin-profile' },
+  { label: 'Create Conference', icon: { ios: 'plus', android: 'add', web: 'add' }, route: '/superadmin-events', background: '#FAF7FF', iconBackground: '#EBDDFF', iconColor: '#7C3AED' },
+  { label: 'Watchlist', icon: { ios: 'clock', android: 'schedule', web: 'schedule' }, route: '/superadmin-people', background: '#FFFCF7', iconBackground: '#FBEFDF', iconColor: '#EF8600' },
+  { label: 'Notifications', icon: { ios: 'bell', android: 'notifications', web: 'notifications' }, route: '/superadmin-profile', background: '#F2FCFF', iconBackground: '#D9F4FB', iconColor: '#00A5C8' },
   {
-  label: 'Export Data',
-  icon: {
-    ios: 'square.and.arrow.down',
-    android: 'download',
-    web: 'download',
+    label: 'Export Data',
+    icon: { ios: 'square.and.arrow.down', android: 'download', web: 'download' },
+    route: 'export',
+    background: '#F2FDF9',
+    iconBackground: '#DCF6ED',
+    iconColor: '#00A878',
   },
-  route: 'export',
-},
 ] as const;
 
 function initials(name?: string) { return (name || 'User').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(); }
@@ -214,16 +213,15 @@ export default function SuperAdminDashboardScreen() {
     router.push(action.route as never);
   }
 }}
-     style={styles.action}>
-
-      <SymbolView
-       name={action.icon} size={18} 
-       tintColor="#7C3AED" />
+     style={[styles.action, { backgroundColor: action.background }]}>
+      <View style={[styles.actionIcon, { backgroundColor: action.iconBackground }]}>
+        <SymbolView name={action.icon} size={27} tintColor={action.iconColor} />
+      </View>
        <Text style={styles.actionText}>{action.label}</Text></Pressable>)}
        </View>
        <Text style={styles.sectionTitle}>RECENT USER ACTIVITY</Text><View style={styles.activityCard}>{recent.length === 0 ? <Text style={styles.empty}>No recent registration activity.</Text> : recent.map((entry, index) => <Pressable key={entry.id} onPress={() => router.push('/superadmin-people')} style={styles.activityRow}><View style={[styles.activityAvatar, { backgroundColor: ['#7C3AED', '#00A878', '#D97706'][index % 3] }]}><Text style={styles.activityAvatarText}>{initials(entry.user.name)}</Text></View><View style={styles.activityCopy}><Text style={styles.activityName}>{entry.user.name || 'Unnamed User'}</Text><Text style={styles.activityDetail}>{[entry.user.company_name, entry.ticket_reference].filter(Boolean).join(' · ') || entry.user.email || 'Registration submitted'}</Text></View><Text style={[styles.status, entry.approval_status === 'approved' ? styles.approved : entry.approval_status === 'rejected' ? styles.rejected : styles.pending]}>{entry.approval_status}</Text></Pressable>)}</View></>}</ScrollView><SuperAdminTabBar activeTab="Home" /></SafeAreaView></View>;
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F7F8FC' }, safe: { flex: 1 }, header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' }, headerTitle: { color: '#1D2639', fontSize: 13, fontWeight: '800' }, content: { padding: 12, paddingBottom: 20 }, title: { fontSize: 24, fontWeight: '800', color: '#1D2639' }, subtitle: { marginTop: 3, marginBottom: 10, fontSize: 10, color: '#718098' }, loader: { paddingVertical: 48, alignItems: 'center' }, error: { padding: 12, borderRadius: 8, color: '#C62828', backgroundColor: '#FFF0F1', fontSize: 10 }, metricCard: { minHeight: 62, marginBottom: 9, padding: 10, borderRadius: 11, flexDirection: 'row', alignItems: 'center' }, iconBox: { width: 33, height: 33, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }, metricCopy: { flex: 1, marginLeft: 10 }, metricValue: { fontSize: 19, fontWeight: '800', color: '#1D2639' }, metricLabel: { fontSize: 8, fontWeight: '800', color: '#1D2639' }, metricDetail: { fontSize: 7, color: '#718098' }, chevron: { fontSize: 22 }, sectionTitle: { marginTop: 9, marginBottom: 7, fontSize: 8, fontWeight: '800', color: '#60718A' }, actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, action: { width: '48%', height: 62, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF' }, actionText: { marginTop: 5, fontSize: 8, fontWeight: '700', color: '#354057' }, activityCard: { overflow: 'hidden', borderRadius: 11, backgroundColor: '#FFF' }, empty: { padding: 17, color: '#718098', fontSize: 9, textAlign: 'center' }, activityRow: { minHeight: 52, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E5E9F0' }, activityAvatar: { width: 27, height: 27, borderRadius: 7, alignItems: 'center', justifyContent: 'center' }, activityAvatarText: { color: '#FFF', fontSize: 9, fontWeight: '800' }, activityCopy: { flex: 1, marginLeft: 8 }, activityName: { fontSize: 9, fontWeight: '800', color: '#253046' }, activityDetail: { marginTop: 2, fontSize: 7, color: '#718098' }, status: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 7, overflow: 'hidden', fontSize: 7, fontWeight: '800', color: '#FFF', textTransform: 'capitalize' }, pending: { backgroundColor: '#E98200' }, approved: { backgroundColor: '#00A878' }, rejected: { backgroundColor: '#E92A2A' },
+  screen: { flex: 1, backgroundColor: '#F7F8FC' }, safe: { flex: 1 }, header: { height: 52, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E4E8EF' }, headerTitle: { color: '#1D2639', fontSize: 13, fontWeight: '800' }, content: { padding: 12, paddingBottom: 20 }, title: { fontSize: 24, fontWeight: '800', color: '#1D2639' }, subtitle: { marginTop: 3, marginBottom: 10, fontSize: 10, color: '#718098' }, loader: { paddingVertical: 48, alignItems: 'center' }, error: { padding: 12, borderRadius: 8, color: '#C62828', backgroundColor: '#FFF0F1', fontSize: 10 }, metricCard: { minHeight: 62, marginBottom: 9, padding: 10, borderRadius: 11, flexDirection: 'row', alignItems: 'center' }, iconBox: { width: 33, height: 33, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }, metricCopy: { flex: 1, marginLeft: 10 }, metricValue: { fontSize: 19, fontWeight: '800', color: '#1D2639' }, metricLabel: { fontSize: 8, fontWeight: '800', color: '#1D2639' }, metricDetail: { fontSize: 7, color: '#718098' }, chevron: { fontSize: 22 }, sectionTitle: { marginTop: 9, marginBottom: 7, fontSize: 8, fontWeight: '800', color: '#60718A' }, actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, action: { width: '48%', height: 170, borderRadius: 20, alignItems: 'center', justifyContent: 'center', shadowColor: '#34425D', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 }, actionIcon: { width: 74, height: 74, borderRadius: 20, alignItems: 'center', justifyContent: 'center' }, actionText: { marginTop: 17, fontSize: 11, fontWeight: '800', color: '#172238' }, activityCard: { overflow: 'hidden', borderRadius: 11, backgroundColor: '#FFF' }, empty: { padding: 17, color: '#718098', fontSize: 9, textAlign: 'center' }, activityRow: { minHeight: 52, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#E5E9F0' }, activityAvatar: { width: 27, height: 27, borderRadius: 7, alignItems: 'center', justifyContent: 'center' }, activityAvatarText: { color: '#FFF', fontSize: 9, fontWeight: '800' }, activityCopy: { flex: 1, marginLeft: 8 }, activityName: { fontSize: 9, fontWeight: '800', color: '#253046' }, activityDetail: { marginTop: 2, fontSize: 7, color: '#718098' }, status: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 7, overflow: 'hidden', fontSize: 7, fontWeight: '800', color: '#FFF', textTransform: 'capitalize' }, pending: { backgroundColor: '#E98200' }, approved: { backgroundColor: '#00A878' }, rejected: { backgroundColor: '#E92A2A' },
 });
