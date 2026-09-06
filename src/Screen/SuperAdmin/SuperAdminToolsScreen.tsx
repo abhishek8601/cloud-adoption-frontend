@@ -5,6 +5,8 @@ import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 import { useAuth } from '../../context/AuthContext';
+import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
+import { useAttendeeDataExport } from '../../hooks/useAttendeeDataExport';
 
 const tools = [
   // { title: 'Configure Fields', detail: 'Manage sign-up form fields and interests', icon: { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }, color: '#7C3AED', background: '#F2ECFF' },
@@ -15,6 +17,7 @@ const tools = [
 export default function SuperAdminToolsScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { cancelExport, confirmExport, isConfirmationVisible, isExporting, startExport } = useAttendeeDataExport(user?.token);
 
   const exportData = async () => {
     if (!user?.token) { Alert.alert('Authentication Error', 'Please sign in again.'); return; }
@@ -43,7 +46,7 @@ export default function SuperAdminToolsScreen() {
   };
 
   const pressTool = (title: string) => {
-    if (title === 'Export Data') { void exportData(); return; }
+    if (title === 'Export Data') { confirmExport(); return; }
     Alert.alert(title, 'This tool will be available soon.');
   };
 
@@ -53,6 +56,8 @@ export default function SuperAdminToolsScreen() {
       {tools.map((tool) => <Pressable key={tool.title} accessibilityRole="button" accessibilityLabel={tool.title} onPress={() => pressTool(tool.title)} style={styles.card}><View style={[styles.iconBox, { backgroundColor: tool.background }]}><SymbolView name={tool.icon} size={19} tintColor={tool.color} /></View><View style={styles.copy}><Text style={styles.cardTitle}>{tool.title}</Text><Text style={styles.detail}>{tool.detail}</Text></View><Text style={styles.chevron}>›</Text></Pressable>)}
     </View>
     <SuperAdminTabBar activeTab="Tools" />
+    <ExportDataConfirmation visible={isConfirmationVisible} onCancel={cancelExport} onConfirm={startExport} />
+    <ExportDataLoader visible={isExporting} />
   </SafeAreaView></View>;
 }
 

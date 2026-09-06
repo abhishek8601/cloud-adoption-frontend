@@ -5,7 +5,9 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SuperAdminTabBar from '../../components/SuperAdminTabBar';
+import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
 import { useAuth } from '../../context/AuthContext';
+import { useAttendeeDataExport } from '../../hooks/useAttendeeDataExport';
 import { adminApi, apiRequest, type RegistrationEntry } from '../../services/api';
 
 type Metric = { label: string; detail: string; value: string; icon: 'calendar' | 'clock' | 'person.2'; color: string; route: string };
@@ -28,6 +30,7 @@ function initials(name?: string) { return (name || 'User').split(' ').map((part)
 export default function SuperAdminDashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { cancelExport, confirmExport, isConfirmationVisible, isExporting, startExport } = useAttendeeDataExport(user?.token);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [recent, setRecent] = useState<RegistrationEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -208,7 +211,7 @@ export default function SuperAdminDashboardScreen() {
      key={action.label} 
      onPress={() => {
   if (action.route === 'export') {
-    void exportData();
+    confirmExport();
   } else {
     router.push(action.route as never);
   }
@@ -219,7 +222,7 @@ export default function SuperAdminDashboardScreen() {
       </View>
        <Text style={styles.actionText}>{action.label}</Text></Pressable>)}
        </View>
-       <Text style={styles.sectionTitle}>RECENT USER ACTIVITY</Text><View style={styles.activityCard}>{recent.length === 0 ? <Text style={styles.empty}>No recent registration activity.</Text> : recent.map((entry, index) => <Pressable key={entry.id} onPress={() => router.push('/superadmin-people')} style={styles.activityRow}><View style={[styles.activityAvatar, { backgroundColor: ['#7C3AED', '#00A878', '#D97706'][index % 3] }]}><Text style={styles.activityAvatarText}>{initials(entry.user.name)}</Text></View><View style={styles.activityCopy}><Text style={styles.activityName}>{entry.user.name || 'Unnamed User'}</Text><Text style={styles.activityDetail}>{[entry.user.company_name, entry.ticket_reference].filter(Boolean).join(' · ') || entry.user.email || 'Registration submitted'}</Text></View><Text style={[styles.status, entry.approval_status === 'approved' ? styles.approved : entry.approval_status === 'rejected' ? styles.rejected : styles.pending]}>{entry.approval_status}</Text></Pressable>)}</View></>}</ScrollView><SuperAdminTabBar activeTab="Home" /></SafeAreaView></View>;
+       <Text style={styles.sectionTitle}>RECENT USER ACTIVITY</Text><View style={styles.activityCard}>{recent.length === 0 ? <Text style={styles.empty}>No recent registration activity.</Text> : recent.map((entry, index) => <Pressable key={entry.id} onPress={() => router.push('/superadmin-people')} style={styles.activityRow}><View style={[styles.activityAvatar, { backgroundColor: ['#7C3AED', '#00A878', '#D97706'][index % 3] }]}><Text style={styles.activityAvatarText}>{initials(entry.user.name)}</Text></View><View style={styles.activityCopy}><Text style={styles.activityName}>{entry.user.name || 'Unnamed User'}</Text><Text style={styles.activityDetail}>{[entry.user.company_name, entry.ticket_reference].filter(Boolean).join(' · ') || entry.user.email || 'Registration submitted'}</Text></View><Text style={[styles.status, entry.approval_status === 'approved' ? styles.approved : entry.approval_status === 'rejected' ? styles.rejected : styles.pending]}>{entry.approval_status}</Text></Pressable>)}</View></>}</ScrollView><SuperAdminTabBar activeTab="Home" /><ExportDataConfirmation visible={isConfirmationVisible} onCancel={cancelExport} onConfirm={startExport} /><ExportDataLoader visible={isExporting} /></SafeAreaView></View>;
 }
 
 const styles = StyleSheet.create({

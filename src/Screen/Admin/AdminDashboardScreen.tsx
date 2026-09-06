@@ -5,6 +5,8 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
+import { useAttendeeDataExport } from '../../hooks/useAttendeeDataExport';
 import { adminApi, registrationApi, type RegistrationEntry } from '../../services/api';
 import AdminBottomNav from './AdminBottomNav';
 
@@ -43,6 +45,7 @@ function MetricCard({ icon, value, title, detail, backgroundColor, tintColor, on
 export default function AdminDashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { cancelExport, confirmExport, isConfirmationVisible, isExporting, startExport } = useAttendeeDataExport(user?.token);
   const [activeConferenceCount, setActiveConferenceCount] = useState<number | null>(null);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [attendeeCount, setAttendeeCount] = useState<number | null>(null);
@@ -51,6 +54,7 @@ export default function AdminDashboardScreen() {
   const loadDashboardData = useCallback(async () => {
     if (!user?.token) {
       setPendingCount(null);
+      setAttendeeCount(null);
       setRecentRegistrations([]);
       return;
     }
@@ -58,6 +62,7 @@ export default function AdminDashboardScreen() {
     try {
       const response = await registrationApi.list(user.token);
       const registrations = response.data || [];
+      setAttendeeCount(response.meta?.total ?? registrations.length);
       const pendingEntries = registrations.filter(
         (entry) => entry.approval_status === 'pending',
       );
@@ -77,6 +82,7 @@ export default function AdminDashboardScreen() {
       setRecentRegistrations([...priorityEntries, ...additionalEntries].slice(0, 2));
     } catch {
       setPendingCount(null);
+      setAttendeeCount(null);
       setRecentRegistrations([]);
     }
   }, [user?.token]);
@@ -98,26 +104,11 @@ export default function AdminDashboardScreen() {
     }
   }, [user?.token]);
 
-  const loadAttendeeCount = useCallback(async () => {
-    if (!user?.token) {
-      setAttendeeCount(null);
-      return;
-    }
-
-    try {
-      const response = await adminApi.conferenceAttendees(user.token);
-      setAttendeeCount(response.meta?.total ?? (Array.isArray(response.data) ? response.data.length : 0));
-    } catch {
-      setAttendeeCount(null);
-    }
-  }, [user?.token]);
-
   useFocusEffect(
     useCallback(() => {
       void loadDashboardData();
-      void loadAttendeeCount();
       void loadActiveConferenceCount();
-    }, [loadActiveConferenceCount, loadAttendeeCount, loadDashboardData]),
+    }, [loadActiveConferenceCount, loadDashboardData]),
   );
 
   return (
@@ -221,7 +212,7 @@ export default function AdminDashboardScreen() {
   <Pressable
     accessibilityLabel="Export attendee data"
     accessibilityRole="button"
-    onPress={() => router.push('/admin-tools')}
+    onPress={confirmExport}
     style={[styles.actionCard, styles.exportCard]}
   >
     <View style={[styles.actionIcon, styles.exportIcon]}>
@@ -286,6 +277,8 @@ export default function AdminDashboardScreen() {
         </ScrollView>
 
         <AdminBottomNav active="home" />
+        <ExportDataConfirmation visible={isConfirmationVisible} onCancel={cancelExport} onConfirm={startExport} />
+        <ExportDataLoader visible={isExporting} />
       </SafeAreaView>
     </View>
   );

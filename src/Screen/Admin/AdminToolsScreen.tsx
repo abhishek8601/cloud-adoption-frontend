@@ -4,6 +4,8 @@ import { SymbolView } from 'expo-symbols';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
+import { useAttendeeDataExport } from '../../hooks/useAttendeeDataExport';
 import AdminBottomNav from './AdminBottomNav';
 
 type Tool = {
@@ -23,6 +25,7 @@ const tools: Tool[] = [
 export default function AdminToolsScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { cancelExport, confirmExport, isConfirmationVisible, isExporting, startExport } = useAttendeeDataExport(user?.token);
 
   const exportData = async () => {
     if (!user?.token) {
@@ -91,7 +94,7 @@ export default function AdminToolsScreen() {
 
   const handleToolPress = (tool: Tool) => {
     if (tool.title === 'Export Data') {
-      void exportData();
+      confirmExport();
       return;
     }
     Alert.alert(tool.title, 'This tool will be available soon.');
@@ -135,6 +138,8 @@ export default function AdminToolsScreen() {
           ))}
         </View>
         <AdminBottomNav active="tools" />
+        <ExportDataConfirmation visible={isConfirmationVisible} onCancel={cancelExport} onConfirm={startExport} />
+        <ExportDataLoader visible={isExporting} />
       </SafeAreaView>
     </View>
   );

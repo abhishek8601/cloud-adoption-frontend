@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -29,8 +30,7 @@ type AdminForm = {
   area_of_interest: string;
   linkedin_url: string;
   remarks: string;
-  password: string;
-  password_confirmation: string;
+  status: 'active' | 'inactive';
 };
 
 const initialForm: AdminForm = {
@@ -44,14 +44,13 @@ const initialForm: AdminForm = {
   area_of_interest: '',
   linkedin_url: '',
   remarks: '',
-  password: '',
-  password_confirmation: '',
+  status: 'active',
 };
 
 const fields: {
   key: Exclude<
     keyof AdminForm,
-    'password' | 'password_confirmation'
+    'status'
   >;
   label: string;
   keyboardType?: 'email-address' | 'phone-pad' | 'url';
@@ -178,8 +177,9 @@ export default function AdminEditScreen() {
         area_of_interest: result?.area_of_interest ?? '',
         linkedin_url: result?.linkedin_url ?? '',
         remarks: result?.remarks ?? '',
-        password: '',
-        password_confirmation: '',
+        status: result?.status?.toLowerCase() === 'inactive' || result?.is_active === false
+          ? 'inactive'
+          : 'active',
       });
     } catch (requestError) {
       setError(
@@ -215,14 +215,6 @@ export default function AdminEditScreen() {
       return;
     }
 
-    if (
-      form.password &&
-      form.password !== form.password_confirmation
-    ) {
-      setError('Passwords do not match.');
-      return;
-    }
-
     setIsSaving(true);
     setError(null);
 
@@ -231,11 +223,9 @@ export default function AdminEditScreen() {
         process.env.EXPO_PUBLIC_ADMIN_ADMINS_URL ||
         '/admin/admins';
 
-      /*
-       * Don't send empty password fields.
-       */
       const body: Partial<AdminForm> = {
         name: form.name,
+        email: form.email,
         phone: form.phone,
         company_name: form.company_name,
         designation: form.designation,
@@ -246,16 +236,20 @@ export default function AdminEditScreen() {
         remarks: form.remarks,
       };
 
-      if (form.password) {
-        body.password = form.password;
-        body.password_confirmation =
-          form.password_confirmation;
-      }
-
       await apiRequest(`${baseUrl}/${id}`, {
         method: 'PUT',
         token: user.token,
         body,
+      });
+
+      // The API updates account state through its dedicated status route,
+      // rather than through the general administrator update endpoint.
+      await apiRequest(`${baseUrl}/${id}/status`, {
+        method: 'PATCH',
+        token: user.token,
+        body: {
+          status: form.status,
+        },
       });
 
       router.replace('/superadmin-admin-users');
@@ -279,9 +273,12 @@ export default function AdminEditScreen() {
         <View style={styles.header}>
           <Pressable
             onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
             hitSlop={10}
+            style={styles.backButton}
           >
-            <Text style={styles.back}>‹</Text>
+            <SymbolView name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }} size={20} tintColor="#7C3AED" />
           </Pressable>
 
           <Text style={styles.headerTitle}>
@@ -365,43 +362,23 @@ export default function AdminEditScreen() {
                 </View>
               ))}
 
-              {/* Password */}
               <View style={styles.field}>
-                <Text style={styles.label}>
-                  PASSWORD
-                </Text>
-
-                <TextInput
-                  value={form.password}
-                  onChangeText={(value) =>
-                    update('password', value)
-                  }
-                  secureTextEntry
-                  placeholder="Leave blank to keep current password"
-                  placeholderTextColor="#96A0B0"
-                  style={styles.input}
-                />
-              </View>
-
-              {/* Confirm Password */}
-              <View style={styles.field}>
-                <Text style={styles.label}>
-                  CONFIRM PASSWORD
-                </Text>
-
-                <TextInput
-                  value={form.password_confirmation}
-                  onChangeText={(value) =>
-                    update(
-                      'password_confirmation',
-                      value
-                    )
-                  }
-                  secureTextEntry
-                  placeholder="Confirm new password"
-                  placeholderTextColor="#96A0B0"
-                  style={styles.input}
-                />
+                <Text style={styles.label}>STATUS</Text>
+                <View style={styles.statusOptions}>
+                  {(['active', 'inactive'] as const).map((status) => (
+                    <Pressable
+                      key={status}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: form.status === status }}
+                      onPress={() => update('status', status)}
+                      style={[styles.statusOption, form.status === status && styles.selectedStatusOption]}
+                    >
+                      <Text style={[styles.statusOptionText, form.status === status && styles.selectedStatusOptionText]}>
+                        {status === 'active' ? 'Active' : 'Inactive'}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
               </View>
 
               {/* Update Button */}
@@ -469,10 +446,11 @@ const styles = StyleSheet.create({
     width: 18,
   },
 
-  back: {
-    color: '#7C3AED',
-    fontSize: 30,
-    lineHeight: 30,
+  backButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   content: {
@@ -527,6 +505,37 @@ const styles = StyleSheet.create({
   readOnlyInput: {
     backgroundColor: '#EEF1F5',
     color: '#65758C',
+  },
+
+  statusOptions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  statusOption: {
+    flex: 1,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#DDE4ED',
+    borderRadius: 8,
+    backgroundColor: '#FFF',
+  },
+
+  selectedStatusOption: {
+    borderColor: '#7C3AED',
+    backgroundColor: '#F2ECFF',
+  },
+
+  statusOptionText: {
+    color: '#65758C',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  selectedStatusOptionText: {
+    color: '#7C3AED',
   },
 
   submit: {
