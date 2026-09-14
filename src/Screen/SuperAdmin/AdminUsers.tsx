@@ -15,10 +15,18 @@ type AdminRecord = {
 
 const avatarColors = ['#7C3AED', '#00A878', '#DF7800', '#8B5CF6', '#E52F50'];
 
+/** users.status is approved/rejected/pending on the API; admins read that as Active/Inactive. */
+function toStatusLabel(status?: string, isActive?: boolean): string {
+  const value = (status || '').toLowerCase();
+  if (value === 'rejected' || value === 'inactive' || value === 'disabled' || isActive === false) return 'Inactive';
+  if (value === 'pending') return 'Pending';
+  return 'Active';
+}
+
 function toAdminRow(admin: AdminRecord, index: number): string[] {
   const name = admin.name || 'Unnamed Admin';
   const initials = name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'AD';
-  const status = admin.status || (admin.is_active === false ? 'Disabled' : 'Active');
+  const status = toStatusLabel(admin.status, admin.is_active);
   return [initials, name, admin.email || 'No email address', avatarColors[index % avatarColors.length], status, String(admin.id || '')];
 }
 

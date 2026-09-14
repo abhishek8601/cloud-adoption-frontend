@@ -63,6 +63,17 @@ type LoginResponse = {
   user?: LoginUser;
 };
 
+/**
+ * The API rejects unverified accounts at login. Match on the message text (and any
+ * explicit code) so we can route to the verification screen instead of showing an error.
+ */
+function isUnverifiedEmailRejection(data: LoginResponse & { code?: string }) {
+  // Backend sends a stable code (AuthController::login). Fall back to the message for older deployments.
+  if (data.code === 'email_not_verified') return true;
+  const message = String(data.message || '').toLowerCase();
+  return message.includes('verify your email');
+}
+
 /** User sign-in screen. */
 export default function SignInScreen() {
   const router = useRouter();
@@ -106,6 +117,11 @@ export default function SignInScreen() {
 
       const rejectedByApi = data.success === false || data.status === false || data.status === 'error';
       if (!response.ok || rejectedByApi) {
+        if (isUnverifiedEmailRejection(data)) {
+          // Don't surface this as a login error — send them to the verification screen instead.
+          router.push({ pathname: '/verify-email', params: { email: trimmedEmail, mode: 'verify' } });
+          return;
+        }
         throw new Error(data.message || 'Unable to sign in. Please check your credentials.');
       }
 

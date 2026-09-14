@@ -3,15 +3,15 @@ import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -55,50 +55,50 @@ const fields: {
   label: string;
   keyboardType?: 'email-address' | 'phone-pad' | 'url';
 }[] = [
-  {
-    key: 'name',
-    label: 'Name',
-  },
-  {
-    key: 'email',
-    label: 'Email address',
-    keyboardType: 'email-address',
-  },
-  {
-    key: 'phone',
-    label: 'Phone',
-    keyboardType: 'phone-pad',
-  },
-  {
-    key: 'company_name',
-    label: 'Company name',
-  },
-  {
-    key: 'designation',
-    label: 'Designation',
-  },
-  {
-    key: 'city',
-    label: 'City',
-  },
-  {
-    key: 'state',
-    label: 'State',
-  },
-  {
-    key: 'area_of_interest',
-    label: 'Area of interest',
-  },
-  {
-    key: 'linkedin_url',
-    label: 'LinkedIn URL',
-    keyboardType: 'url',
-  },
-  {
-    key: 'remarks',
-    label: 'Remarks',
-  },
-];
+    {
+      key: 'name',
+      label: 'Name',
+    },
+    {
+      key: 'email',
+      label: 'Email address',
+      keyboardType: 'email-address',
+    },
+    {
+      key: 'phone',
+      label: 'Phone',
+      keyboardType: 'phone-pad',
+    },
+    {
+      key: 'company_name',
+      label: 'Company name',
+    },
+    {
+      key: 'designation',
+      label: 'Designation',
+    },
+    {
+      key: 'city',
+      label: 'City',
+    },
+    {
+      key: 'state',
+      label: 'State',
+    },
+    {
+      key: 'area_of_interest',
+      label: 'Area of interest',
+    },
+    {
+      key: 'linkedin_url',
+      label: 'LinkedIn URL',
+      keyboardType: 'url',
+    },
+    {
+      key: 'remarks',
+      label: 'Remarks',
+    },
+  ];
 
 export default function AdminEditScreen() {
   const router = useRouter();
@@ -177,7 +177,8 @@ export default function AdminEditScreen() {
         area_of_interest: result?.area_of_interest ?? '',
         linkedin_url: result?.linkedin_url ?? '',
         remarks: result?.remarks ?? '',
-        status: result?.status?.toLowerCase() === 'inactive' || result?.is_active === false
+        // API stores approved/rejected; the form shows it as active/inactive.
+        status: ['inactive', 'rejected', 'disabled'].includes(String(result?.status || '').toLowerCase()) || result?.is_active === false
           ? 'inactive'
           : 'active',
       });
@@ -345,7 +346,7 @@ export default function AdminEditScreen() {
                     selectTextOnFocus={field.key !== 'email'}
                     autoCapitalize={
                       field.key === 'email' ||
-                      field.key === 'linkedin_url'
+                        field.key === 'linkedin_url'
                         ? 'none'
                         : 'words'
                     }

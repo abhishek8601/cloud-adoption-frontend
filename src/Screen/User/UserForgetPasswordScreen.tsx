@@ -14,14 +14,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const FORGOT_PASSWORD_ENDPOINT = process.env.EXPO_PUBLIC_FORGOT_PASSWORD_URL;
-
-type ForgotPasswordResponse = {
-  message?: string;
-  success?: boolean;
-  status?: boolean | string | number;
-};
+import { api } from '../../services/api';
 
 export default function UserForgetPasswordScreen() {
   const router = useRouter();
@@ -44,36 +37,12 @@ export default function UserForgetPasswordScreen() {
       return;
     }
 
-    if (!FORGOT_PASSWORD_ENDPOINT) {
-      setError('Service is not configured. Please contact support.');
-      return;
-    }
-
     setError('');
     setSuccess(false);
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(FORGOT_PASSWORD_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ email: trimmedEmail }),
-      });
-
-      const responseText = await response.text();
-      let data: ForgotPasswordResponse = {};
-
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch {
-        // Non-JSON response
-      }
-
-      const isSuccessful = data.success === true || data.status === true || response.ok;
-      if (!isSuccessful) {
-        throw new Error(data.message || 'Failed to process request. Please try again.');
-      }
-
+      await api.forgotPassword(trimmedEmail);
       router.push({ pathname: '/verify-email', params: { email: trimmedEmail } });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Failed to process request. Please try again.');
@@ -264,7 +233,7 @@ const styles = StyleSheet.create({
   hero: {
     alignItems: 'center',
     marginVertical: 20,
-    
+
   },
   logo: {
     width: 60,
