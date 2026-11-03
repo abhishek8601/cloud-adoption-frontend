@@ -4,8 +4,8 @@ import { SymbolView } from 'expo-symbols';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
+import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 import { useAuth } from '../../context/AuthContext';
 import { useAttendeeDataExport } from '../../hooks/useAttendeeDataExport';
 import { adminApi, apiRequest, type RegistrationEntry } from '../../services/api';
@@ -14,7 +14,7 @@ type Metric = { label: string; detail: string; value: string; icon: 'calendar' |
 const actionItems = [
   { label: 'Create Conference', icon: { ios: 'plus', android: 'add', web: 'add' }, route: '/superadmin-events', background: '#FAF7FF', iconBackground: '#EBDDFF', iconColor: '#7C3AED' },
   { label: 'Watchlist', icon: { ios: 'clock', android: 'schedule', web: 'schedule' }, route: '/superadmin-people', background: '#FFFCF7', iconBackground: '#FBEFDF', iconColor: '#EF8600' },
-  { label: 'Notifications', icon: { ios: 'bell', android: 'notifications', web: 'notifications' }, route: '/superadmin-profile', background: '#F2FCFF', iconBackground: '#D9F4FB', iconColor: '#00A5C8' },
+  { label: 'Notifications', icon: { ios: 'bell', android: 'notifications', web: 'notifications' }, route: '/superadmin-notifications', background: '#F2FCFF', iconBackground: '#D9F4FB', iconColor: '#00A5C8' },
   {
     label: 'Export Data',
     icon: { ios: 'square.and.arrow.down', android: 'download', web: 'download' },
@@ -37,140 +37,140 @@ export default function SuperAdminDashboardScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const exportData = async () => {
-  if (!user?.token) {
-    Alert.alert(
-      'Authentication Error',
-      'Please sign in again.'
-    );
-    return;
-  }
-
-  try {
-    const endpoint =
-      process.env.EXPO_PUBLIC_ADMIN_ATTENDEES_EXPORT_URL ||
-      'https://api.lifesciencesdreamin.com/api/admin/reports/attendees/export';
-
-    console.log('EXPORT URL:', endpoint);
-    console.log('TOKEN EXISTS:', !!user.token);
-
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      headers: {
-        Accept: 'text/csv',
-        Authorization: `Bearer ${user.token}`,
-      },
-    });
-
-    console.log('EXPORT STATUS:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      console.log(
-        'EXPORT ERROR RESPONSE:',
-        errorText
-      );
-
-      throw new Error(
-        `Export failed (${response.status})`
-      );
-    }
-
-    const csvText = await response.text();
-
-    console.log(
-      'CSV RECEIVED:',
-      csvText.substring(0, 300)
-    );
-
-    if (!csvText) {
-      throw new Error(
-        'Export returned empty data.'
-      );
-    }
-
-    // WEB
-    if (Platform.OS === 'web') {
-      const blob = new Blob(
-        [csvText],
-        {
-          type: 'text/csv;charset=utf-8;',
-        }
-      );
-
-      const url =
-        window.URL.createObjectURL(blob);
-
-      const link =
-        document.createElement('a');
-
-      link.href = url;
-      link.download =
-        'attendees-report.csv';
-
-      document.body.appendChild(link);
-      link.click();
-
-      document.body.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
-
+    if (!user?.token) {
       Alert.alert(
-        'Success',
-        'Attendee report downloaded.'
+        'Authentication Error',
+        'Please sign in again.'
       );
-
       return;
     }
 
-    // ANDROID / IOS
-    const FileSystem =
-      await import('expo-file-system/legacy');
+    try {
+      const endpoint =
+        process.env.EXPO_PUBLIC_ADMIN_ATTENDEES_EXPORT_URL ||
+        'https://api.lifesciencesdreamin.com/api/admin/reports/attendees/export';
 
-    const Sharing =
-      await import('expo-sharing');
+      console.log('EXPORT URL:', endpoint);
+      console.log('TOKEN EXISTS:', !!user.token);
 
-    const fileUri =
-      `${FileSystem.cacheDirectory}attendees-report.csv`;
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/csv',
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
-    await FileSystem.writeAsStringAsync(
-  fileUri,
-  csvText
-);
+      console.log('EXPORT STATUS:', response.status);
 
-    const canShare =
-      await Sharing.isAvailableAsync();
+      if (!response.ok) {
+        const errorText = await response.text();
 
-    if (canShare) {
-      await Sharing.shareAsync(
-        fileUri,
-        {
-          mimeType: 'text/csv',
-          dialogTitle:
-            'Export Attendee Report',
-          UTI: 'public.comma-separated-values-text',
-        }
+        console.log(
+          'EXPORT ERROR RESPONSE:',
+          errorText
+        );
+
+        throw new Error(
+          `Export failed (${response.status})`
+        );
+      }
+
+      const csvText = await response.text();
+
+      console.log(
+        'CSV RECEIVED:',
+        csvText.substring(0, 300)
       );
-    } else {
+
+      if (!csvText) {
+        throw new Error(
+          'Export returned empty data.'
+        );
+      }
+
+      // WEB
+      if (Platform.OS === 'web') {
+        const blob = new Blob(
+          [csvText],
+          {
+            type: 'text/csv;charset=utf-8;',
+          }
+        );
+
+        const url =
+          window.URL.createObjectURL(blob);
+
+        const link =
+          document.createElement('a');
+
+        link.href = url;
+        link.download =
+          'attendees-report.csv';
+
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+
+        window.URL.revokeObjectURL(url);
+
+        Alert.alert(
+          'Success',
+          'Attendee report downloaded.'
+        );
+
+        return;
+      }
+
+      // ANDROID / IOS
+      const FileSystem =
+        await import('expo-file-system/legacy');
+
+      const Sharing =
+        await import('expo-sharing');
+
+      const fileUri =
+        `${FileSystem.cacheDirectory}attendees-report.csv`;
+
+      await FileSystem.writeAsStringAsync(
+        fileUri,
+        csvText
+      );
+
+      const canShare =
+        await Sharing.isAvailableAsync();
+
+      if (canShare) {
+        await Sharing.shareAsync(
+          fileUri,
+          {
+            mimeType: 'text/csv',
+            dialogTitle:
+              'Export Attendee Report',
+            UTI: 'public.comma-separated-values-text',
+          }
+        );
+      } else {
+        Alert.alert(
+          'Export Complete',
+          `File saved at:\n${fileUri}`
+        );
+      }
+    } catch (requestError) {
+      console.log(
+        'EXPORT ERROR:',
+        requestError
+      );
+
       Alert.alert(
-        'Export Complete',
-        `File saved at:\n${fileUri}`
+        'Export Failed',
+        requestError instanceof Error
+          ? requestError.message
+          : 'Unable to export attendee data.'
       );
     }
-  } catch (requestError) {
-    console.log(
-      'EXPORT ERROR:',
-      requestError
-    );
-
-    Alert.alert(
-      'Export Failed',
-      requestError instanceof Error
-        ? requestError.message
-        : 'Unable to export attendee data.'
-    );
-  }
-};
+  };
 
   const loadDashboard = useCallback(async () => {
     if (!user?.token) { setError('Please sign in again to view the dashboard.'); setIsLoading(false); return; }
@@ -201,28 +201,28 @@ export default function SuperAdminDashboardScreen() {
 
   return <View style={styles.screen}><StatusBar style="dark" /><SafeAreaView style={styles.safe}><View style={styles.header}><Text style={styles.headerTitle}>Dashboard</Text></View><ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}><Text style={styles.title}>Dashboard</Text><Text style={styles.subtitle}>Cloud Adoption Solutions</Text>{isLoading ? <View style={styles.loader}><ActivityIndicator color="#7C3AED" /></View> : error ? <Text style={styles.error}>{error}</Text> : <><View>{metrics.map((metric) => <Pressable key={metric.label} onPress={() => router.push(metric.route as never)} style={[styles.metricCard, { backgroundColor: `${metric.color}12` }]}><View style={[styles.iconBox, { backgroundColor: `${metric.color}18` }]}><SymbolView name={{ ios: metric.icon, android: metric.icon === 'person.2' ? 'group' : metric.icon, web: metric.icon === 'person.2' ? 'group' : metric.icon } as never} size={17} tintColor={metric.color} /></View><View style={styles.metricCopy}><Text style={styles.metricValue}>{metric.value}</Text><Text style={styles.metricLabel}>{metric.label}</Text><Text style={styles.metricDetail}>{metric.detail}</Text></View><Text style={[styles.chevron, { color: metric.color }]}>›</Text></Pressable>)}
   </View>
-  <Text 
-  style={styles.sectionTitle}>
-    QUICK ACTIONS
+    <Text
+      style={styles.sectionTitle}>
+      QUICK ACTIONS
     </Text>
-    <View 
-    style={styles.actions}>{actionItems.map((action) => 
-    <Pressable
-     key={action.label} 
-     onPress={() => {
-  if (action.route === 'export') {
-    confirmExport();
-  } else {
-    router.push(action.route as never);
-  }
-}}
-     style={[styles.action, { backgroundColor: action.background }]}>
-      <View style={[styles.actionIcon, { backgroundColor: action.iconBackground }]}>
-        <SymbolView name={action.icon} size={27} tintColor={action.iconColor} />
-      </View>
-       <Text style={styles.actionText}>{action.label}</Text></Pressable>)}
-       </View>
-       <Text style={styles.sectionTitle}>RECENT USER ACTIVITY</Text><View style={styles.activityCard}>{recent.length === 0 ? <Text style={styles.empty}>No recent registration activity.</Text> : recent.map((entry, index) => <Pressable key={entry.id} onPress={() => router.push('/superadmin-people')} style={styles.activityRow}><View style={[styles.activityAvatar, { backgroundColor: ['#7C3AED', '#00A878', '#D97706'][index % 3] }]}><Text style={styles.activityAvatarText}>{initials(entry.user.name)}</Text></View><View style={styles.activityCopy}><Text style={styles.activityName}>{entry.user.name || 'Unnamed User'}</Text><Text style={styles.activityDetail}>{[entry.user.company_name, entry.ticket_reference].filter(Boolean).join(' · ') || entry.user.email || 'Registration submitted'}</Text></View><Text style={[styles.status, entry.approval_status === 'approved' ? styles.approved : entry.approval_status === 'rejected' ? styles.rejected : styles.pending]}>{entry.approval_status}</Text></Pressable>)}</View></>}</ScrollView><SuperAdminTabBar activeTab="Home" /><ExportDataConfirmation visible={isConfirmationVisible} onCancel={cancelExport} onConfirm={startExport} /><ExportDataLoader visible={isExporting} /></SafeAreaView></View>;
+    <View
+      style={styles.actions}>{actionItems.map((action) =>
+        <Pressable
+          key={action.label}
+          onPress={() => {
+            if (action.route === 'export') {
+              confirmExport();
+            } else {
+              router.push(action.route as never);
+            }
+          }}
+          style={[styles.action, { backgroundColor: action.background }]}>
+          <View style={[styles.actionIcon, { backgroundColor: action.iconBackground }]}>
+            <SymbolView name={action.icon} size={27} tintColor={action.iconColor} />
+          </View>
+          <Text style={styles.actionText}>{action.label}</Text></Pressable>)}
+    </View>
+    <Text style={styles.sectionTitle}>RECENT USER ACTIVITY</Text><View style={styles.activityCard}>{recent.length === 0 ? <Text style={styles.empty}>No recent registration activity.</Text> : recent.map((entry, index) => <Pressable key={entry.id} onPress={() => router.push('/superadmin-people')} style={styles.activityRow}><View style={[styles.activityAvatar, { backgroundColor: ['#7C3AED', '#00A878', '#D97706'][index % 3] }]}><Text style={styles.activityAvatarText}>{initials(entry.user.name)}</Text></View><View style={styles.activityCopy}><Text style={styles.activityName}>{entry.user.name || 'Unnamed User'}</Text><Text style={styles.activityDetail}>{[entry.user.company_name, entry.ticket_reference].filter(Boolean).join(' · ') || entry.user.email || 'Registration submitted'}</Text></View><Text style={[styles.status, entry.approval_status === 'approved' ? styles.approved : entry.approval_status === 'rejected' ? styles.rejected : styles.pending]}>{entry.approval_status}</Text></Pressable>)}</View></>}</ScrollView><SuperAdminTabBar activeTab="Home" /><ExportDataConfirmation visible={isConfirmationVisible} onCancel={cancelExport} onConfirm={startExport} /><ExportDataLoader visible={isExporting} /></SafeAreaView></View>;
 }
 
 const styles = StyleSheet.create({

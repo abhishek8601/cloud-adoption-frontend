@@ -51,7 +51,8 @@ export default function RoleManagement() {
     const admins: Person[] = adminsResult.status === 'fulfilled'
       ? (Array.isArray(adminsResult.value.data) ? adminsResult.value.data : adminsResult.value.data?.data || []).map((admin, index) => ({ id: `admin-${admin.id || admin.email || index}`, name: admin.name || 'Unnamed Admin', email: admin.email || 'No email address', role: normalizeRole(admin.role) }))
       : [];
-    const isSignedInSuperAdmin = user.role?.trim().toLowerCase().replace(/\s+/g, '') === 'superadmin';
+    const signedInRole = typeof user.role === 'string' ? user.role : (user.role as { name?: string } | undefined)?.name || '';
+    const isSignedInSuperAdmin = signedInRole.trim().toLowerCase().replace(/\s+/g, '') === 'superadmin';
     const signedInSuperAdmin: Person[] = isSignedInSuperAdmin && user.email ? [{ id: `superadmin-${user.id || user.email}`, name: user.name || 'Super Admin', email: user.email, role: 'Super Admin' }] : [];
     const combined = [...signedInSuperAdmin, ...admins, ...attendees];
     const uniquePeople = Array.from(new Map(combined.map((person) => [person.email.toLowerCase(), person])).values()).sort((first, second) => priority[first.role] - priority[second.role] || first.name.localeCompare(second.name));

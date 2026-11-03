@@ -453,3 +453,57 @@ export const registrationApi = {
       },
     }),
 };
+
+/* ------------------------------------------------------------------ */
+/* Admin push notifications                                            */
+/* ------------------------------------------------------------------ */
+
+export type NotificationItem = {
+  id: number;
+  conference: { id: number | null; title: string | null };
+  title: string;
+  message: string;
+  scheduled_at: string | null;
+  sent_at: string | null;
+  created_by: { id: number | null; name: string | null };
+  created_at: string;
+  updated_at: string;
+};
+
+export type NotificationPayload = {
+  conference_id: number;
+  title: string;
+  message: string;
+  scheduled_at?: string | null;
+};
+
+export const notificationApi = {
+  list: (token: string, conferenceId?: number | null) =>
+    apiRequest<NotificationItem[]>(
+      `/admin/notifications?per_page=100${conferenceId ? `&conference_id=${conferenceId}` : ""}`,
+      { token },
+    ),
+
+  create: (token: string, payload: NotificationPayload) =>
+    apiRequest<NotificationItem>("/admin/notifications", {
+      method: "POST",
+      token,
+      body: payload,
+    }),
+
+  update: (token: string, id: number, payload: Partial<NotificationPayload>) =>
+    apiRequest<NotificationItem>(`/admin/notifications/${id}`, {
+      method: "PUT",
+      token,
+      body: payload,
+    }),
+
+  remove: (token: string, id: number) =>
+    apiRequest(`/admin/notifications/${id}`, { method: "DELETE", token }),
+
+  send: (token: string, id: number) =>
+    apiRequest<{ notification_id: number }>(`/admin/notifications/${id}/send`, {
+      method: "POST",
+      token,
+    }),
+};

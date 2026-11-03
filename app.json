@@ -8,16 +8,20 @@
     "scheme": "cloudadoptionconferenceapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "com.lifesciencesdreamin.conference",
+      "icon": "./assets/expo.icon",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+      "package": "com.lifesciencesdreamin.conference",
+      "googleServicesFile": "./google-services.json",
+      "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/Container.png",
         "backgroundImage": "./assets/images/Container.png",
         "monochromeImage": "./assets/images/Container.png"
-      },
-      "predictiveBackGestureEnabled": false
+      }
     },
     "web": {
       "output": "static",
@@ -34,7 +38,8 @@
       ],
       "@react-native-community/datetimepicker",
       "expo-sharing",
-      "expo-image"
+      "expo-image",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,

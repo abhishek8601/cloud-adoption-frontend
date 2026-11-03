@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "233154556140",
+    "project_id": "cloud-adoption-conference",
+    "storage_bucket": "cloud-adoption-conference.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:233154556140:android:5d8c644313a56430ea75c9",
+        "android_client_info": {
+          "package_name": "com.lifesciencesdreamin.conference"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFw--KcQC_AlnpjnmLRMgt6EAnt_7-j64"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

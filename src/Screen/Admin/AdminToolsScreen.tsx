@@ -1,10 +1,10 @@
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../context/AuthContext';
 import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
+import { useAuth } from '../../context/AuthContext';
 import { useAttendeeDataExport } from '../../hooks/useAttendeeDataExport';
 import AdminBottomNav from './AdminBottomNav';
 
@@ -95,6 +95,10 @@ export default function AdminToolsScreen() {
   const handleToolPress = (tool: Tool) => {
     if (tool.title === 'Export Data') {
       confirmExport();
+      return;
+    }
+    if (tool.title === 'Send Notifications') {
+      router.push('/admin-notifications');
       return;
     }
     Alert.alert(tool.title, 'This tool will be available soon.');

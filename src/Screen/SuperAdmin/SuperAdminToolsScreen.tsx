@@ -1,11 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
 import SuperAdminTabBar from '../../components/SuperAdminTabBar';
 import { useAuth } from '../../context/AuthContext';
-import ExportDataLoader, { ExportDataConfirmation } from '../../components/ExportDataLoader';
 import { useAttendeeDataExport } from '../../hooks/useAttendeeDataExport';
 
 const tools = [
@@ -47,6 +47,7 @@ export default function SuperAdminToolsScreen() {
 
   const pressTool = (title: string) => {
     if (title === 'Export Data') { confirmExport(); return; }
+    if (title === 'Send Notifications') { router.push('/superadmin-notifications'); return; }
     Alert.alert(title, 'This tool will be available soon.');
   };
 
